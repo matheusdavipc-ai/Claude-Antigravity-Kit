@@ -28,6 +28,14 @@ Na instalação Windows, o aviso de porta 20128 ocupada foi investigado. O proce
 - `omniroute dashboard` terminou com código zero e acionou a abertura do painel no navegador.
 - Depois do comando, havia um único processo escutando nessa porta, com o mesmo PID e endereço local de antes; a saúde continuou positiva.
 
-A causa era a tentativa de iniciar uma segunda instância com `omniroute` sem argumentos. O README e os dois prompts de instalação foram corrigidos para verificar a instância existente antes de iniciar e para usar `dashboard` ao abrir o painel. Não foi necessário reinstalar, mudar a porta, encerrar o servidor, alterar credenciais ou modificar o pacote npm.
+A causa era a tentativa de iniciar uma segunda instância com `omniroute` sem argumentos. O README e os dois prompts de instalação foram corrigidos para verificar a instância existente antes de iniciar e para usar `dashboard` ao abrir o painel. Essa primeira verificação apenas reutilizou a instância existente; ela não devolveu a execução do servidor ao terminal do usuário. Não houve reinstalação, mudança de porta, alteração de credenciais ou modificação do pacote npm.
 
 Essa verificação não enviou requisições de geração aos modelos nem testou a autenticação da conexão OpenRouter. O teste real desse diagnóstico foi feito no Windows; os comandos macOS seguem o mesmo CLI, mas não foram executados em um Mac nessa verificação.
+
+### Restauração da execução no terminal
+
+Após esclarecer que o usuário queria manter o servidor no próprio terminal, a instância em segundo plano foi encerrada com `omniroute stop`. A porta livre foi confirmada antes de executar exatamente `omniroute`, sem argumentos.
+
+O CLI permaneceu em execução, exibiu `OmniRoute is running!` e informou inicialização em 128,2 segundos. Após ficar pronto, `/api/health` retornou `status: "ok"` e `/dashboard/providers/openrouter` respondeu HTTP 200 com o título do OmniRoute. As primeiras sondagens falharam durante a inicialização; o sucesso foi confirmado posteriormente, dentro do prazo configurado de 180 segundos.
+
+A instância de teste foi encerrada pelo comando oficial e a porta 20128 foi novamente conferida livre, permitindo que o usuário inicie o servidor no próprio terminal. Os prompts agora exigem encerrar instâncias temporárias criadas pelos testes. `omniroute dashboard` continua sendo apenas o comando que abre o navegador e retorna ao prompt; ele não transfere uma execução existente para o terminal atual.
