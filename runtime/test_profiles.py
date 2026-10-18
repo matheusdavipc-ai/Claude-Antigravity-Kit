@@ -40,7 +40,7 @@ class RoutingTests(unittest.TestCase):
         self.upstream.statuses=[]
         self.upstream.harness_refusal=False
         threading.Thread(target=self.upstream.serve_forever,daemon=True).start()
-        self.gate = gateway.Gateway('TEST-ONLY',catalog(),f'http://127.0.0.1:{self.upstream.server_port}',testing=True)
+        self.gate = gateway.Gateway('TEST-ONLY',catalog(),f'http://127.0.0.1:{self.upstream.server_port}',testing=True,transport='openrouter')
         threading.Thread(target=self.gate.serve_forever,daemon=True).start()
     def tearDown(self):
         self.gate.shutdown(); self.gate.server_close()

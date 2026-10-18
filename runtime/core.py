@@ -114,7 +114,7 @@ def save_secret(path, value):
         return
     if sys.platform != 'darwin':
         raise RuntimeError('Somente Windows e macOS sao suportados.')
-    if not re.fullmatch(r'sk-or-[A-Za-z0-9_-]+', value):
+    if not re.fullmatch(r'sk-[A-Za-z0-9_-]+', value):
         raise ValueError('Formato de chave invalido.')
     account = keychain_account(path)
     # Feed the secret via stdin, never command-line arguments or environment.

@@ -39,3 +39,17 @@ Após esclarecer que o usuário queria manter o servidor no próprio terminal, a
 O CLI permaneceu em execução, exibiu `OmniRoute is running!` e informou inicialização em 128,2 segundos. Após ficar pronto, `/api/health` retornou `status: "ok"` e `/dashboard/providers/openrouter` respondeu HTTP 200 com o título do OmniRoute. As primeiras sondagens falharam durante a inicialização; o sucesso foi confirmado posteriormente, dentro do prazo configurado de 180 segundos.
 
 A instância de teste foi encerrada pelo comando oficial e a porta 20128 foi novamente conferida livre, permitindo que o usuário inicie o servidor no próprio terminal. Os prompts agora exigem encerrar instâncias temporárias criadas pelos testes. `omniroute dashboard` continua sendo apenas o comando que abre o navegador e retorna ao prompt; ele não transfere uma execução existente para o terminal atual.
+
+## Integração do pool OpenRouter
+
+O perfil router agora encaminha as chamadas pelo filtro local para `/v1/messages` do OmniRoute, qualificando explicitamente os sete IDs com `openrouter/`. O original continua direto na Anthropic. A estratégia `fill-first` é configurada somente no provedor OpenRouter; `main1` tem prioridade 1 e `main2`, quando cadastrada, prioridade 2. O pool usa as conexões do OmniRoute, e não a antiga chave OpenRouter direta do perfil.
+
+A configuração foi aplicada pelo cliente oficial autenticado do OmniRoute e pelos endpoints HTTP de configuração. Foi criada uma chave local restrita aos sete modelos, protegida com DPAPI na instalação Windows. Estratégia/prioridades anteriores e o identificador da chave criada ficaram no backup privado do pool. Nenhum banco foi editado diretamente e nenhum segredo foi incluído no Git.
+
+Foi executada uma chamada real curta, com texto sintético e no máximo oito tokens de saída, para North Mini Code gratuito, pelo caminho filtro → OmniRoute → OpenRouter. Ela retornou HTTP 200 e conteúdo; o cabeçalho de seleção identificou a conexão `main1`. O endpoint `/v1/messages/count_tokens` também retornou HTTP 200 com contagem de entrada. Não foram enviados arquivos nem contexto de projetos.
+
+Os testes do pool usam um servidor OmniRoute simulado para provocar o limite de main1 e verificar main2 antes da reserva de modelo, além de bloquear rotas externas, modelos pagos e repetição por erro de autenticação. Um teste de continuidade usa processos Claude fictícios reais, o hook de limite, a transferência textual e o gateway real do kit para chegar à main2 simulada. Esses testes não substituem testar duas contas reais: a instalação possui somente main1. Main2 não foi criada nem inventada.
+
+As sessões Claude abertas antes da atualização carregam o runtime antigo e precisam ser reabertas. O servidor OmniRoute que já estava ativo foi preservado. O token Claude expirado mostrado no painel é de uma conexão separada e não foi renovado ou usado para contornar o login nativo.
+
+Validação local final: 34 testes do repositório e 21 testes do runtime passaram. O teste de Keychain foi ampliado para a chave local OmniRoute e novamente aprovado em simulação; o acesso interativo real no macOS continua dependente de validação em um Mac.

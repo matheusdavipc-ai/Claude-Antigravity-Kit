@@ -21,3 +21,7 @@ Agentes deste perfil ficam em ~/.claude/profiles/router/agents. Nao use agentes 
 O filtro aceita apenas os sete modelos :free e as cinco rotas acima; modelos pagos, plugins cobrados e busca hospedada paga sao bloqueados. Nao altere o endpoint/configuracao para contornar o filtro. Nao use Lightning ou terceiros. Se principal e reserva falharem, informe o impedimento. Uma imagem nunca deve ir para uma reserva sem suporte visual.
 Mantenha CONTINUIDADE.md no projeto durante tarefas longas: objetivo, decisoes, arquivos alterados, testes, operacoes incertas e proxima acao. Ao receber um handoff, inspecione os arquivos e esse registro antes de continuar. Historico textual selecionado nao equivale a transcricao integral; reasoning e ferramentas anteriores nao sao reproduzidos.
 O retorno ao original e manual. Nao retorne automaticamente. Registros locais de modelos efetivamente solicitados ficam em .claude/launcher/runs/<sessao>/modelos-utilizados.json. Reporte uso e resultados sem inventar validacao.
+
+## Contas e continuidade
+
+As chamadas passam pelo filtro local e pelo OmniRoute. O pool OpenRouter usa fill-first e prioridade: main1 antes de main2, quando ambas existirem e estiverem habilitadas. O filtro cuida das reservas de modelo; OmniRoute cuida das contas. Nao fixe conexao nem forneca outra chave na chamada Agent. Uma falha de autenticacao nao equivale a cota esgotada. Se o servidor estiver indisponivel, informe a pendencia e preserve a continuidade.

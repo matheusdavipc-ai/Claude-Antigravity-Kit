@@ -11,13 +11,18 @@ from core import KIT, ROLES, MODELS, get_catalog, safe_candidate, MODEL_NAMES, P
 
 class Gateway(ThreadingHTTPServer):
     daemon_threads = True
-    def __init__(self, upstream_token, catalog=None, upstream='https://openrouter.ai', testing=False):
+    def __init__(self, upstream_token, catalog=None, upstream='http://127.0.0.1:20128', testing=False, transport='omniroute'):
         super().__init__(('127.0.0.1', 0), Handler)
         self.token = secrets.token_urlsafe(32)
         self.upstream_token = upstream_token
         self.upstream = urlsplit(upstream)
-        if not testing and (self.upstream.hostname != 'openrouter.ai' or self.upstream.scheme != 'https'):
-            raise ValueError('Upstream deve ser o OpenRouter oficial.')
+        self.transport = transport
+        if transport not in ('omniroute', 'openrouter'):
+            self.server_close()
+            raise ValueError('Transporte desconhecido.')
+        if not testing and (transport != 'omniroute' or self.upstream.scheme != 'http' or self.upstream.hostname not in ('127.0.0.1','localhost','::1') or self.upstream.path not in ('','/') or self.upstream.username or self.upstream.query or self.upstream.fragment):
+            self.server_close()
+            raise ValueError('O router exige OmniRoute local; upstream externo bloqueado.')
         self.catalog = catalog if catalog is not None else get_catalog()
         self.catalog_time = time.monotonic()
         self.context_ceiling = {model: item.get('context') for model, item in self.catalog.items()}
@@ -116,7 +121,7 @@ class Handler(BaseHTTPRequestHandler):
                 self.server.active += 1
             try:
                 for index, model in enumerate(candidates):
-                    body['model'] = model
+                    body['model'] = ('openrouter/' if self.server.transport == 'omniroute' else '') + model
                     payload = json.dumps(body).encode()
                     cls = http.client.HTTPSConnection if self.server.upstream.scheme == 'https' else http.client.HTTPConnection
                     connection = cls(self.server.upstream.hostname, self.server.upstream.port, timeout=180)
@@ -127,7 +132,7 @@ class Handler(BaseHTTPRequestHandler):
                         if self.headers.get(key):
                             headers[key] = self.headers[key]
                     try:
-                        connection.request('POST','/api'+path,payload,headers)
+                        connection.request('POST',path if self.server.transport == 'omniroute' else '/api'+path,payload,headers)
                         response = connection.getresponse()
                     except (OSError, http.client.HTTPException):
                         connection.close()
@@ -147,7 +152,8 @@ class Handler(BaseHTTPRequestHandler):
                         self.record(role,model,'reserve-next',response.status)
                         print('[clauderouter] '+role+': principal indisponivel (HTTP '+str(response.status)+'); reserva '+candidates[index+1],flush=True)
                         continue
-                    self.record(role,model,'response',response.status)
+                    selected = response.getheader('X-OmniRoute-Selected-Connection-Id')
+                    self.record(role,model,'response',response.status,selected)
                     self.send_response(response.status)
                     for key in ('Content-Type','Retry-After'):
                         if response.getheader(key):
@@ -176,8 +182,10 @@ class Handler(BaseHTTPRequestHandler):
                 except OSError:
                     pass
 
-    def record(self, role, model, outcome, status):
+    def record(self, role, model, outcome, status, connection_id=None):
         event = {'time':time.time(),'role':role,'model':model,'outcome':outcome,'status':status}
+        if connection_id:
+            event['connection_id'] = connection_id
         with self.server.lock:
             self.server.events.append(event)
 

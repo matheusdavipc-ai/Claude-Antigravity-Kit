@@ -59,6 +59,8 @@ class InstallTests(unittest.TestCase):
             self.assertEqual(len(router['modelPicker']['options']), 7)
             self.assertEqual({model.removesuffix('[1m]') for model in router['availableModels']}, set(core.MODELS))
             self.assertFalse((home / '.claude/profiles/router/.credentials.json').exists())
+            self.assertEqual(install.load(home / '.claude/profiles/router/upstream.json')['transport'], 'omniroute')
+            self.assertTrue((home / '.claude/launcher/runtime/omniroute_bridge.mjs').is_file())
             self.assertTrue((home / '.claude/profiles/router/skills').is_dir())
             self.assertTrue(all(Path(row['backup']).is_file() for row in instance.state['files'] if row.get('backup')))
             repeat = install.Installer(home)
@@ -128,6 +130,11 @@ class InstallTests(unittest.TestCase):
                 self.assertEqual(args[0], ['/usr/bin/security', '-i'])
                 self.assertIn(b'sk-or-synthetic-test-key', kwargs['input'])
                 self.assertNotIn('sk-or-', marker.read_text())
+                core.save_secret(marker, 'sk-synthetic-omniroute-key')
+                self.assertIn(b'sk-synthetic-omniroute-key', runner.call_args.kwargs['input'])
+                self.assertNotIn('sk-', marker.read_text())
+                with self.assertRaises(ValueError):
+                    core.save_secret(marker, 'sk-invalid\ncommand')
 
     def test_mac_descendant_scan_fails_closed(self):
         fake = subprocess.CompletedProcess([], 0, '11 10\n12 11\n20 1\n', '')

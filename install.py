@@ -114,7 +114,7 @@ class Installer:
             shutil.copy2(self.kit / 'installation.json', self.backup / 'previous-installation.json')
         self.journal()
         self.write(self.kit / 'models.json', (ROOT / 'models.json').read_bytes())
-        for file in (ROOT / 'runtime').glob('*.py'):
+        for file in (file for file in (ROOT / 'runtime').iterdir() if file.suffix in ('.py','.mjs')):
             self.write(self.kit / 'runtime' / file.name, file.read_bytes())
         self.write(self.kit / 'config.json', {'native_executable': str(native), 'python': sys.executable})
         self.assets()
@@ -149,7 +149,7 @@ class Installer:
             settings['env'].pop(key, None)
         settings.setdefault('hooks', {})['PreToolUse'] = hook_config(sys.executable, self.kit, {'PreToolUse': 'Agent'})['PreToolUse']
         self.write(router / 'settings.json', settings)
-        self.write(router / 'upstream.json', {'url': 'https://openrouter.ai'})
+        self.write(router / 'upstream.json', {**load(router / 'upstream.json'), 'url': 'http://127.0.0.1:20128', 'transport': 'omniroute'})
         for template, path in (('CLAUDE.md', self.home / '.claude/CLAUDE.md'), ('GEMINI.md', self.home / '.gemini/GEMINI.md')):
             existing = path.read_text(encoding='utf-8') if path.is_file() else ''
             addition = (ROOT / 'templates' / template).read_text(encoding='utf-8')
@@ -203,7 +203,7 @@ class Installer:
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--dry-run', action='store_true', help='Show the installation plan without writing files')
-    parser.add_argument('--skip-key', action='store_true', help='Defer per-machine key setup')
+    parser.add_argument('--skip-key', action='store_true', help='Defer local OmniRoute pool setup')
     parser.add_argument('--no-path', action='store_true')
     parser.add_argument('--home', type=Path, default=Path.home())
     parser.add_argument('--native-executable', type=Path)
@@ -231,9 +231,9 @@ def main():
     print('Login da assinatura: execute o Claude nativo e /login. Nao copie credenciais de outro computador.')
     if not args.skip_key:
         env = dict(os.environ, CLAUDE_KIT_HOME=str(args.home.resolve()))
-        result = subprocess.run([sys.executable, str(instance.kit / 'runtime/replace_key.py')], env=env)
+        result = subprocess.run([sys.executable, str(instance.kit / 'runtime/omniroute_pool.py')], env=env)
         if result.returncode:
-            print('Arquivos instalados; chave ainda pendente. Execute runtime/replace_key.py no diretorio instalado.', file=sys.stderr)
+            print('Arquivos instalados; chave ainda pendente. Execute runtime/omniroute_pool.py no diretorio instalado.', file=sys.stderr)
             return result.returncode
     return 0
 

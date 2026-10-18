@@ -160,7 +160,9 @@ def run_router(args, run, continuity=None):
     config = read_json(ROUTER / 'upstream.json')
     if not config:
         raise RuntimeError('Perfil router nao instalado.')
-    token = load_secret(ROUTER / 'secrets/openrouter.dpapi')
+    from omniroute_pool import require_ready
+    require_ready(config['url'])
+    token = load_secret(ROUTER / 'secrets/omniroute.dpapi')
     gateway = Gateway(token, upstream=config['url'])
     thread = threading.Thread(target=gateway.serve_forever,daemon=True)
     thread.start()
@@ -187,7 +189,7 @@ def run_router(args, run, continuity=None):
     if continuity:
         native_args += ['Leia '+str(continuity)+' e continue a tarefa interrompida. Verifique o estado atual antes de repetir qualquer operacao.']
     try:
-        print('[clauderouter] Inkling coordena; reservas por funcao; somente rotas gratuitas.',flush=True)
+        print('[clauderouter] Inkling coordena; OmniRoute alterna contas OpenRouter; reservas por funcao; somente rotas gratuitas.',flush=True)
         child = start_native(native_args,env)
         result = wait_native(child)
     finally:
