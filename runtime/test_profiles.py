@@ -115,6 +115,8 @@ class SafetyTests(unittest.TestCase):
         state.consume({'event':'PreToolUse','tool_id':'a'})
         self.assertFalse(state.idle())
         state.consume({'event':'PostToolUse','tool_id':'a'})
+        self.assertFalse(state.idle())  # Main model may still be processing the result.
+        state.consume({'event':'Stop'})
         self.assertTrue(state.idle())
         state.consume({'event':'SubagentStart','agent':'b'})
         self.assertFalse(state.idle())

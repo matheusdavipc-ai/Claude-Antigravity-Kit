@@ -24,4 +24,6 @@ O retorno ao original e manual. Nao retorne automaticamente. Registros locais de
 
 ## Contas e continuidade
 
-As chamadas passam pelo filtro local e pelo OmniRoute. O pool OpenRouter usa fill-first e prioridade: main1 antes de main2, quando ambas existirem e estiverem habilitadas. O filtro cuida das reservas de modelo; OmniRoute cuida das contas. Nao fixe conexao nem forneca outra chave na chamada Agent. Uma falha de autenticacao nao equivale a cota esgotada. Se o servidor estiver indisponivel, informe a pendencia e preserve a continuidade.
+As chamadas passam pelo filtro local e pelo OmniRoute. O pool OpenRouter usa fill-first e prioridade: main1, main2, main3 etc., em ordem numerica, quando existirem e estiverem habilitadas. A troca ocorre entre requisicoes na mesma sessao; nao pause nem gere handoff so para trocar a conta. O filtro cuida das reservas de modelo; OmniRoute cuida das contas. Nao fixe conexao nem forneca outra chave na chamada Agent. Uma falha de autenticacao nao equivale a cota esgotada. Se o servidor estiver indisponivel, informe a pendencia e preserve a continuidade.
+
+Quando o usuario autorizar explicitamente trabalho autonomo, avance com suposicoes razoaveis e registre duvidas opcionais para o final. Essa autorizacao prevalece sobre perguntas obrigatorias genericas das personas compartilhadas; nao elimina permissoes obrigatorias, bloqueios essenciais ou limites reais. Ao retomar um HANDOFF.md, verifique estado e resultados antes de repetir operacoes.

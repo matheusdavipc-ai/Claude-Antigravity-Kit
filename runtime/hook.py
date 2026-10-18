@@ -48,6 +48,13 @@ def main():
     if name in ('Stop','SubagentStop'):
         safe['background'] = bool(event.get('background_tasks'))
         safe['crons'] = bool(event.get('session_crons'))
+    if profile == 'original':
+        from quota_watch import feedback
+        context, ready = feedback(root, event)
+        if ready:
+            safe.update({'quota':True,'reason':'anthropic_proactive_95','transcript':event.get('transcript_path'),'cwd':event.get('cwd')})
+        if context:
+            print(json.dumps({'hookSpecificOutput':{'hookEventName':name,'additionalContext':context}}))
     atomic_json(root / (str(time.time_ns())+'-'+str(os.getpid())+'.event.json'),safe)
 
 if __name__ == '__main__':

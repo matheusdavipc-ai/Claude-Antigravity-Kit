@@ -129,7 +129,7 @@ class Installer:
             original['model'] = 'sonnet'
         original['availableModels'] = ['sonnet', 'opus', 'claude-sonnet-5-5', 'claude-opus-5-5']
         original.setdefault('permissions', {'defaultMode': 'default'})
-        events = {'SessionStart': '', 'PreToolUse': '', 'PostToolUse': '', 'PostToolUseFailure': '', 'SubagentStart': '', 'SubagentStop': '', 'Stop': '', 'StopFailure': 'rate_limit'}
+        events = {'UserPromptSubmit': '', 'SessionStart': '', 'PreToolUse': '', 'PostToolUse': '', 'PostToolUseFailure': '', 'SubagentStart': '', 'SubagentStop': '', 'Stop': '', 'StopFailure': 'rate_limit'}
         hooks = original.setdefault('hooks', {})
         for event, rows in hook_config(sys.executable, self.kit, events).items():
             previous = hooks.get(event, [])

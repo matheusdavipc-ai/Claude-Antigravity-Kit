@@ -16,14 +16,17 @@ try {
   const providers=await api('/api/providers?limit=5000');
   const connections=(providers.connections||[]).filter(c=>c.provider==='openrouter' && c.isActive);
   if(!connections.some(c=>c.name==='main1'))throw new Error('main1 required');
-  for(const name of ['main1','main2'])if(connections.filter(c=>c.name===name).length>1)throw new Error('ambiguous account name');
+  const numbered=connections.filter(c=>/^main[1-9][0-9]*$/.test(c.name));
+  for(const c of numbered)if(numbered.filter(x=>x.name===c.name).length>1)throw new Error('ambiguous account name');
+  const last=Math.max(...numbered.map(c=>Number(c.name.slice(4))));
+  const rankOf=c=>/^main[1-9][0-9]*$/.test(c.name)?Number(c.name.slice(4)):Math.max(last+1,c.priority||last+1);
   const settings=await api('/api/settings');
   const before={providerStrategies:settings.providerStrategies||{},connections:connections.map(c=>({id:c.id,name:c.name,priority:c.priority})),created_key_id:null};
   await writeFile(config.backup,JSON.stringify(before,null,2),{mode:0o600});
   const strategies={...before.providerStrategies,openrouter:{...(before.providerStrategies.openrouter||{}),fallbackStrategy:'fill-first'}};
   if(JSON.stringify(strategies)!==JSON.stringify(before.providerStrategies))await api('/api/settings','PATCH',{providerStrategies:strategies});
   for(const c of connections){
-    const rank=c.name==='main1'?1:c.name==='main2'?2:Math.max(3,c.priority||3);
+    const rank=rankOf(c);
     if(c.priority!==rank)await api('/api/providers/'+encodeURIComponent(c.id),'PUT',{priority:rank});
   }
   let secret, key_id;
@@ -39,6 +42,6 @@ try {
   const verified=await api('/api/settings');
   if(verified.providerStrategies?.openrouter?.fallbackStrategy!=='fill-first')throw new Error('strategy verification');
   const rows=(await api('/api/providers?limit=5000')).connections.filter(c=>c.provider==='openrouter'&&c.isActive);
-  if(rows.find(c=>c.name==='main1')?.priority!==1 || (rows.some(c=>c.name==='main2')&&rows.find(c=>c.name==='main2').priority!==2))throw new Error('priority verification');
+  if(rows.some(c=>c.priority!==rankOf(c)))throw new Error('priority verification');
   process.stdout.write(JSON.stringify({secret,key_id,connections:rows.map(c=>({id:c.id,name:c.name,priority:c.priority})),strategy:'fill-first'}));
 }catch{process.stderr.write('OmniRoute pool setup failed.\n');process.exitCode=1;}

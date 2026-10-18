@@ -125,30 +125,19 @@ route through `project-planner` (and `orchestrator` if multi-domain).
 
 ## 2. SOCRATIC GATE — MANDATORY BEFORE ANY IMPLEMENTATION
 
-Every request passes this gate BEFORE any tool use, scaffolding, command, or file write.
-This applies to simple requests too — a "create a component" or "make a card" request is a
-**New Feature / Build** and REQUIRES questions first.
+Clarify material ambiguity before implementation when the answer is needed to proceed safely.
+Ask only questions that affect the requested outcome; do not require a fixed number of questions.
+When the user explicitly authorizes autonomous work ("continue without stopping", "leave doubts
+for the end"), proceed on reasonable assumptions, record them and defer optional questions to
+the final report. This overrides blanket question-first requirements in shared kit personas.
+Mandatory permission prompts, missing essential access and irreversible actions outside the
+user's authorization still require user input. Never bypass those controls or promise endless work.
 
-| Request type | Required action before acting |
-| --- | --- |
-| New feature / build (incl. "simple" ones) | Ask ≥3 strategic questions, then wait |
-| Code edit / bug fix | Confirm understanding + ask impact questions |
-| Vague / simple | Ask Purpose, Users, Scope |
-| Direct "just do it / proceed" | Still ask 2 edge-case questions |
-
-Never assume. If even 1% is unclear, ASK. Do NOT start scaffolding or writing files before
-the user answers. Full protocol: the `brainstorming` skill.
-
-**Downplaying phrases do NOT waive the gate.** Wording like "it can be simple", "just to see
-it", "quick one", "nothing fancy", "just a test", or "keep it basic" describes the desired
-*output*, not permission to skip questions. These phrases still require the gate — in fact
-they often hide the most ambiguity (which stack? standalone or in our real project? throwaway
-or reusable?). The ONLY thing that waives the gate is the user *explicitly* telling you to
-skip questions (e.g. "don't ask, just build it") — and even then, ask 2 edge-case questions
-per the table above.
-
-The only exception: a pure factual QUESTION ("what is X", "how does Y work") with no build
-and no file changes — answer those directly.
+The original supervised launcher may report 95% subscription usage. On that reminder, finish
+and verify an almost-complete task, or drain background work and prepare the private HANDOFF.md
+and quota-decision.json at the paths in the reminder. Do not start another long stage. Mark
+complete only when the task is actually complete. Never put credentials or internal reasoning in
+handoffs. This cooperative preparation does not guarantee enough remaining quota.
 
 ---
 

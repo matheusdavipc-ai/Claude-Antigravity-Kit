@@ -53,3 +53,11 @@ Os testes do pool usam um servidor OmniRoute simulado para provocar o limite de 
 As sessões Claude abertas antes da atualização carregam o runtime antigo e precisam ser reabertas. O servidor OmniRoute que já estava ativo foi preservado. O token Claude expirado mostrado no painel é de uma conexão separada e não foi renovado ou usado para contornar o login nativo.
 
 Validação local final: 34 testes do repositório e 21 testes do runtime passaram. O teste de Keychain foi ampliado para a chave local OmniRoute e novamente aprovado em simulação; o acesso interativo real no macOS continua dependente de validação em um Mac.
+
+## Preparação preventiva da assinatura e ordem de várias contas
+
+O monitor cooperativo usa somente as janelas nativas five_hour e seven_day da assinatura, a partir de 95% informado. Não confunde janela de contexto com cota, não inventa dados ausentes e não considera atualização visual como nova medição. Um novo turno cancela o encerramento pendente. O agente pode registrar tarefa concluída ou preparar HANDOFF.md e uma decisão de transferência; somente um Stop normal com checkpoint novo, sem trabalho ativo e sem descendentes libera a troca preventiva.
+
+A ordem main1 a main15 foi verificada com um cliente de API simulado e reaplicação idempotente. A transferência em 95% foi verificada com subprocesso Claude fictício real, hooks reais do kit, gravação do checkpoint, encerramento do processo supervisionado e encaminhamento ao próximo perfil. Outros testes cobrem cota ausente/expirada/antiga/de outra sessão, tarefa concluída, decisão parcialmente escrita, tarefas em segundo plano e preservação de saída personalizada da status line. Não foi gasta cota real nem simulada a existência de contas adicionais na instalação privada.
+
+Validação local: 42 testes do repositório e 21 do runtime passaram. O teste de decisão parcialmente escrita foi acrescentado à suíte preventiva e verificado novamente. A atualização deve ser carregada abrindo uma nova sessão pelo lançador claude. A validação da preparação com cota Anthropic real permanece dependente de uma sessão autenticada que disponibilize a telemetria; o teste controlado não comprova previsão exata de consumo. A troca entre contas OpenRouter mantém a sessão e não usa handoff preventivo. Repetição de uma resposta já iniciada continua bloqueada.
