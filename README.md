@@ -38,7 +38,7 @@ São sete modelos distintos em dez posições. Preserve os nomes originais e des
 
 Mantenha as políticas de orquestração separadas: Sonnet/Opus e esforço no claude original; os cinco agentes próprios e as duplas acima no router. Preserve a troca automática por esgotamento reconhecido somente em estado ocioso verificado e sem processos auxiliares; o retorno é manual.
 
-Configure o OmniRoute em ~/.omniroute/.env, escutando em 127.0.0.1:20128, preservando chaves de criptografia existentes. O filtro do kit chama OpenRouter diretamente; OmniRoute não é obrigatório para abrir claude ou clauderouter. Se necessário, inicie omniroute serve --no-open e ajude no primeiro acesso e na conexão OpenRouter pelo dashboard http://127.0.0.1:20128/dashboard/providers/openrouter. Essa conexão é separada da chave protegida do router. Use autenticação legítima; não altere o banco diretamente. Não crie início automático do sistema.
+Configure o OmniRoute em ~/.omniroute/.env, escutando em 127.0.0.1:20128, preservando chaves de criptografia existentes. O filtro do kit chama OpenRouter diretamente; OmniRoute não é obrigatório para abrir claude ou clauderouter. Antes de iniciar, verifique http://127.0.0.1:20128/api/health e confirme que a porta pertence ao OmniRoute. Se ele já estiver saudável, reutilize a instância e execute omniroute dashboard para abrir o painel; não inicie outro servidor. Se estiver parado e a porta estiver livre, inicie omniroute serve --no-open. Se a porta pertencer a outro programa ou a saúde falhar, investigue sem encerrar processos automaticamente. Ajude no primeiro acesso e na conexão OpenRouter pelo dashboard http://127.0.0.1:20128/dashboard/providers/openrouter. Essa conexão é separada da chave protegida do router. Use autenticação legítima; não altere o banco diretamente. Não crie início automático do sistema.
 
 Execute a auditoria pública, os testes do repositório e do runtime, o diagnóstico nativo sem geração, a listagem clauderouter --listar-modelos e a verificação de isolamento dos perfis. Se iniciar OmniRoute, confira saúde HTTP, escuta local e avisos. Distinga testes simulados, login real e disponibilidade dos provedores. Peça autorização antes de testes de geração que consumam cota/créditos.
 
@@ -75,7 +75,7 @@ São sete modelos distintos em dez posições. Preserve os nomes originais e des
 
 Mantenha as políticas de orquestração separadas: Sonnet/Opus e esforço no claude original; os cinco agentes próprios e as duplas acima no router. Preserve a troca automática por esgotamento reconhecido somente em estado ocioso verificado e sem processos auxiliares; o retorno é manual.
 
-Configure o OmniRoute em ~/.omniroute/.env, escutando em 127.0.0.1:20128, preservando chaves de criptografia existentes. O filtro do kit chama OpenRouter diretamente; OmniRoute não é obrigatório para abrir claude ou clauderouter. Se necessário, inicie omniroute serve --no-open e ajude no primeiro acesso e na conexão OpenRouter pelo dashboard http://127.0.0.1:20128/dashboard/providers/openrouter. Essa conexão é separada da chave protegida do router. Use autenticação legítima; não altere o banco diretamente. Não crie início automático do sistema.
+Configure o OmniRoute em ~/.omniroute/.env, escutando em 127.0.0.1:20128, preservando chaves de criptografia existentes. O filtro do kit chama OpenRouter diretamente; OmniRoute não é obrigatório para abrir claude ou clauderouter. Antes de iniciar, verifique http://127.0.0.1:20128/api/health e confirme que a porta pertence ao OmniRoute. Se ele já estiver saudável, reutilize a instância e execute omniroute dashboard para abrir o painel; não inicie outro servidor. Se estiver parado e a porta estiver livre, inicie omniroute serve --no-open. Se a porta pertencer a outro programa ou a saúde falhar, investigue sem encerrar processos automaticamente. Ajude no primeiro acesso e na conexão OpenRouter pelo dashboard http://127.0.0.1:20128/dashboard/providers/openrouter. Essa conexão é separada da chave protegida do router. Use autenticação legítima; não altere o banco diretamente. Não crie início automático do sistema.
 
 Execute a auditoria pública, os testes do repositório e do runtime, o diagnóstico nativo sem geração, a listagem clauderouter --listar-modelos e a verificação de isolamento dos perfis. Se iniciar OmniRoute, confira saúde HTTP, escuta local e avisos. Distinga testes simulados, login real e disponibilidade dos provedores. Peça autorização antes de testes de geração que consumam cota/créditos.
 
@@ -143,10 +143,45 @@ O script instala o Claude nativo se necessario, o OmniRoute 3.8.51 se ausente e 
 
 1. Faça login da assinatura pelo Claude nativo: `~/.local/bin/claude` (no Windows, `~/.local/bin/claude.exe`), usando `/login`. Não transporte `.credentials.json` nem histórico entre máquinas por este repositório.
 2. A chave OpenRouter é solicitada localmente pelo instalador. Para adiá-la, use `-SkipKey` no Windows ou `--skip-key` no macOS. Depois execute `python ~/.claude/launcher/runtime/replace_key.py` com seu Python instalado.
-3. Execute `omniroute serve --no-open` e abra <http://127.0.0.1:20128/dashboard/providers/openrouter>. Conclua o primeiro acesso/login do OmniRoute e adicione sua conexão OpenRouter pelo formulário. A conexão do OmniRoute é separada da credencial protegida do perfil Claude. Uma IA com navegador pode ajudar, mas deve manter segredos fora de prompts, prints, logs e argumentos de comandos. O kit não escreve diretamente no banco nem contorna o login de administração.
+3. Abra o OmniRoute seguindo [as instruções abaixo](#abrir-o-omniroute) e acesse <http://127.0.0.1:20128/dashboard/providers/openrouter>. Conclua o primeiro acesso/login do OmniRoute e adicione sua conexão OpenRouter pelo formulário. A conexão do OmniRoute é separada da credencial protegida do perfil Claude. Uma IA com navegador pode ajudar, mas deve manter segredos fora de prompts, prints, logs e argumentos de comandos. O kit não escreve diretamente no banco nem contorna o login de administração.
 4. Abra `clauderouter`, use `/model` e confira os sete nomes. Execute `clauderouter --listar-modelos` para conferir IDs e reservas sem geração.
 
 Nenhum serviço inicia automaticamente com o Windows ou macOS. OmniRoute não precisa permanecer aberto para os dois comandos Claude. Não importe tokens deste computador para outro.
+
+## Abrir o OmniRoute
+
+**Servidor e painel são ações diferentes.** O comando `omniroute` sem argumentos equivale a iniciar o servidor. Se ele já estiver em execução, aparece `Port 20128 is already in use by PID ...`: uma segunda instância não pode usar a mesma porta. Confira a saúde e o processo antes de concluir que existe uma falha.
+
+| Situação | O que fazer no Windows ou macOS |
+|---|---|
+| OmniRoute já está saudável | Execute `omniroute dashboard` para abrir o painel da instância existente. |
+| OmniRoute está parado e a porta está livre | Execute `omniroute serve --no-open` e, em outro terminal, `omniroute dashboard`. Mantenha o terminal do servidor aberto. |
+| Porta ocupada, mas a saúde falha ou o processo não é OmniRoute | Investigue o processo que ocupa a porta. Não encerre um programa apenas pelo número da porta. |
+| Precisa reiniciar um OmniRoute identificado | Use `omniroute stop`, aguarde a liberação da porta e execute `omniroute serve --no-open`. Isso interrompe as requisições em andamento; faça quando não houver trabalho ativo. |
+
+Para conferir a saúde no **PowerShell**:
+
+```powershell
+Invoke-RestMethod http://127.0.0.1:20128/api/health
+Get-NetTCPConnection -LocalPort 20128 -State Listen
+```
+
+No **macOS**:
+
+```bash
+curl --fail --max-time 10 http://127.0.0.1:20128/api/health
+lsof -nP -iTCP:20128 -sTCP:LISTEN
+```
+
+A saúde deve retornar JSON com `status: "ok"`. A identificação do processo confirma se o serviço é realmente OmniRoute. Depois, abra o painel com:
+
+```text
+omniroute dashboard
+```
+
+Também é possível acessar diretamente <http://127.0.0.1:20128/dashboard/providers/openrouter>. O comando `dashboard` apenas abre o navegador; ele não inicia o servidor. Um painel acessível e uma saúde positiva validam o serviço local, mas não comprovam que a conexão OpenRouter está autenticada ou que todos os modelos estão disponíveis.
+
+As mensagens `Loaded env from ...` informam de onde as configurações foram carregadas. Elas não são erros; o arquivo do pacote pode conter somente um comentário, enquanto as configurações persistentes ficam em `~/.omniroute/.env`. O kit não altera o comando npm nem cria um serviço de início automático. Uma instância iniciada anteriormente pode continuar ativa até ser encerrada.
 
 ## Continuidade e orquestração
 

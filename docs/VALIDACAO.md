@@ -18,3 +18,16 @@ O repositório foi publicado no GitHub. A [primeira execução da CI](https://gi
 A aprovação da CI no macOS não comprova o fluxo completo com uma conta Anthropic, as autorizações interativas do Keychain ou uma sessão nativa de Claude em um Mac real. Essas verificações continuam pendentes. A inspeção visual interativa do perfil instalado também depende de autorização legítima de confiança na pasta; essa autorização não foi contornada.
 
 A documentação de instalação e o catálogo descrevem os recursos distribuídos. Exemplos de uso não representam execuções reais nem comprovação de disponibilidade atual dos modelos.
+
+## Diagnóstico de porta ocupada do OmniRoute
+
+Na instalação Windows, o aviso de porta 20128 ocupada foi investigado. O processo que escutava em `127.0.0.1:20128` era o servidor Node do pacote OmniRoute, iniciado por `omniroute serve --no-open`.
+
+- `/api/health` respondeu HTTP 200 com `status: "ok"`.
+- A página inicial e `/dashboard/providers/openrouter` responderam HTTP 200 com o título do OmniRoute.
+- `omniroute dashboard` terminou com código zero e acionou a abertura do painel no navegador.
+- Depois do comando, havia um único processo escutando nessa porta, com o mesmo PID e endereço local de antes; a saúde continuou positiva.
+
+A causa era a tentativa de iniciar uma segunda instância com `omniroute` sem argumentos. O README e os dois prompts de instalação foram corrigidos para verificar a instância existente antes de iniciar e para usar `dashboard` ao abrir o painel. Não foi necessário reinstalar, mudar a porta, encerrar o servidor, alterar credenciais ou modificar o pacote npm.
+
+Essa verificação não enviou requisições de geração aos modelos nem testou a autenticação da conexão OpenRouter. O teste real desse diagnóstico foi feito no Windows; os comandos macOS seguem o mesmo CLI, mas não foram executados em um Mac nessa verificação.
