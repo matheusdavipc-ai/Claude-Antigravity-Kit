@@ -1,17 +1,81 @@
-# Prompt para instalar com uma IA
+# Prompts de instalação com uma IA
 
-Instale este repositório globalmente neste computador, seguindo README.md e AGENTS.md. Detecte Windows ou macOS, leia os instaladores e execute primeiro o dry-run. Verifique Python 3.12+, Node.js LTS 22.19+, Git e Claude Code nativo 2.1.292+. Instale dependências ausentes somente pelos canais oficiais apropriados, preservando instalações e configurações existentes.
+Estas são as mesmas instruções publicadas no início do [README](../README.md). Copie somente o bloco do seu sistema. Use uma IA com acesso local ao terminal e aos arquivos; você conclui os logins e digita sua chave em entrada oculta no computador. Para conhecer cada recurso, consulte o [catálogo de uso](CATALOGO.md).
 
-Execute o instalador correspondente. A instalação ativa deve ficar em ~/.claude e ~/.gemini/config, com suporte em ~/.claude/launcher e OmniRoute em ~/.omniroute. O clone não pode ser uma dependência de execução. Não copie credenciais, cookies, histórico, backups nem dados de outro computador. Peça que eu digite a chave OpenRouter em entrada local oculta; nunca em chat. Faça login Anthropic pelo fluxo nativo. No macOS use Keychain; no Windows DPAPI.
+Escolha **somente o prompt do seu sistema** e copie o bloco inteiro para o Claude Code, Antigravity ou outra IA com acesso ao terminal e aos arquivos do computador. Ela poderá instalar e verificar o kit; você conclui os logins e digita sua própria chave OpenRouter localmente. Assinaturas e cotas não acompanham o repositório.
 
-Configure os comandos claude (assinatura original) e clauderouter (OpenRouter), respeitando exatamente models.json: Inkling → Nemotron 3 Ultra; Inkling Small → Laguna S 2.1; Nemotron 3.5 Super VL → Inkling Small; North Mini Code → Laguna XS 2.1; Laguna XS 2.1 → North Mini Code. São sete modelos distintos em dez posições. Mostre os nomes originais no seletor, mantenha principal/reserva por função e não acrescente terceiros, modelos pagos ou Lightning. Verifique preço, ferramentas, imagem, expiração e restrições atuais sem gerar despesas inesperadas.
+### Prompt de instalação — Windows
 
-Separe rigorosamente as políticas de orquestração: Sonnet/Opus e esforço no original; cinco agentes e a tabela obrigatória no router. Mantenha troca automática por limite reconhecido, com encerramento somente em estado ocioso verificado e sem processos auxiliares; retorno manual. Se a troca for insegura, preserve a sessão e informe a condição concreta. Não alegue continuidade perfeita.
+```text
+Instale globalmente o Claude-Antigravity-Kit neste computador Windows. Estou autorizando a instalação do kit e das dependências necessárias, preservando meus dados.
 
-Instale e configure OmniRoute com arquivo persistente e endereço 127.0.0.1, sem regenerar chaves existentes. A arquitetura do kit chama OpenRouter diretamente por seu filtro local; não afirme que OmniRoute é obrigatório para os comandos Claude. Inicie-o quando necessário para configurar a conexão OpenRouter pelo dashboard e autenticação legítima. Não altere o banco diretamente nem contorne login. Não crie início automático do sistema sem eu pedir.
+Repositório: https://github.com/matheusdavipc-ai/Claude-Antigravity-Kit.git
+Clone-o em uma pasta do meu usuário, ou reutilize um clone existente depois de conferir origem e alterações locais. Não sobrescreva trabalho existente.
 
-Instale skills, agentes e workflows compartilhados. Use as skills workflow-* no Antigravity conforme a migração oficial, preservando os comandos Claude. Memória pessoal fica desativada até eu configurar explicitamente. Não crie pastas de clientes ou reutilize projetos de exemplo como dados reais.
+Verifique Git for Windows, Python 3.12+, Node.js LTS 22.19+ e Claude Code nativo 2.1.292+. Na pasta do clone, execute primeiro:
+powershell -NoProfile -ExecutionPolicy Bypass -File .\install.ps1 -DryRun
+Depois, execute:
+powershell -NoProfile -ExecutionPolicy Bypass -File .\install.ps1
+O instalador instala Claude nativo e OmniRoute se ausentes. Verifique a versão do Claude existente antes de prosseguir. Não execute tudo como administrador nem desative proteções globalmente.
 
-Execute os testes do repositório, auditoria de conteúdo público, diagnóstico nativo sem geração, listagem dos sete modelos e verificação de isolamento dos perfis. Para OmniRoute, confira saúde HTTP, login do painel, escuta local e avisos. Diferencie testes simulados e disponibilidade real. Validação de geração real só com minha autorização explícita se puder consumir cotas/creditos.
+Use %USERPROFILE%\.claude, %USERPROFILE%\.claude\profiles\router e %USERPROFILE%\.claude\launcher para os perfis e suporte; compartilhe o bundle em %USERPROFILE%\.gemini\config. A chave OpenRouter deve ser digitada por mim em entrada local oculta e protegida com DPAPI. Nunca solicite a chave no chat nem a coloque em argumentos, logs ou prints. Se seu terminal não permitir entrada oculta, use -SkipKey e me oriente a executar localmente replace_key.py do runtime. Ajude no login Anthropic pelo fluxo nativo, sem copiar credenciais. Reabra o terminal e confira o PATH e os dois comandos.
 
-Entregue os locais finais, comandos de uso, resultados, limitações concretas e reversão. Caso tempo, contexto ou cota estejam acabando, escreva CONTINUIDADE.md sem segredos: objetivo, arquivos alterados, comandos/etapas concluídos, backups, testes, pendências, operações incertas e próxima ação. Não declare concluído o que não foi validado.
+Leia README.md, AGENTS.md, models.json e docs/CATALOGO.md antes de alterar arquivos. Primeiro faça a auditoria e o dry-run; depois execute a instalação e as verificações. Preserve configurações existentes, use os backups e a reversão do instalador e não copie perfis privados para o clone. Instale dependências ausentes por fontes oficiais, sem usar runtimes embutidos em outros aplicativos.
+
+Configure claude para a assinatura Anthropic original e clauderouter para OpenRouter, em perfis separados. A instalação global deve funcionar sem depender da pasta clonada. Instale todas as skills, agentes e workflows do bundle; use /workflow-* para evitar conflitos com comandos nativos. Memória pessoal permanece desativada.
+
+Respeite exatamente as funções e duplas de models.json:
+- Orquestrador: Inkling → Nemotron 3 Ultra.
+- Programador principal: Inkling Small → Laguna S 2.1.
+- Especialista visual: Nemotron 3.5 Super VL → Inkling Small.
+- Executor rápido: North Mini Code → Laguna XS 2.1.
+- Programador auxiliar: Laguna XS 2.1 → North Mini Code.
+São sete modelos distintos em dez posições. Preserve os nomes originais e descrições de função em /model, os limites de contexto por modelo e as regras de compactação. Não acrescente modelos pagos ou terceiros. Revalide metadados e informe restrições, expiração ou indisponibilidade; não invente substitutos.
+
+Mantenha as políticas de orquestração separadas: Sonnet/Opus e esforço no claude original; os cinco agentes próprios e as duplas acima no router. Preserve a troca automática por esgotamento reconhecido somente em estado ocioso verificado e sem processos auxiliares; o retorno é manual.
+
+Configure o OmniRoute em ~/.omniroute/.env, escutando em 127.0.0.1:20128, preservando chaves de criptografia existentes. O filtro do kit chama OpenRouter diretamente; OmniRoute não é obrigatório para abrir claude ou clauderouter. Se necessário, inicie omniroute serve --no-open e ajude no primeiro acesso e na conexão OpenRouter pelo dashboard http://127.0.0.1:20128/dashboard/providers/openrouter. Essa conexão é separada da chave protegida do router. Use autenticação legítima; não altere o banco diretamente. Não crie início automático do sistema.
+
+Execute a auditoria pública, os testes do repositório e do runtime, o diagnóstico nativo sem geração, a listagem clauderouter --listar-modelos e a verificação de isolamento dos perfis. Se iniciar OmniRoute, confira saúde HTTP, escuta local e avisos. Distinga testes simulados, login real e disponibilidade dos provedores. Peça autorização antes de testes de geração que consumam cota/créditos.
+
+Entregue os locais finais, comandos de uso, resultados, limitações e reversão. Se a cota, o contexto ou o tempo estiverem acabando, salve CONTINUIDADE.md sem segredos: objetivo, arquivos alterados, backups, etapas e testes concluídos, pendências, operações incertas e próxima ação. Não declare concluído o que não foi verificado.
+```
+
+### Prompt de instalação — macOS
+
+```text
+Instale globalmente o Claude-Antigravity-Kit neste Mac. Estou autorizando a instalação do kit e das dependências necessárias, preservando meus dados.
+
+Repositório: https://github.com/matheusdavipc-ai/Claude-Antigravity-Kit.git
+Clone-o em uma pasta do meu usuário, ou reutilize um clone existente depois de conferir origem e alterações locais. Não sobrescreva trabalho existente.
+
+Verifique Git, Python 3.12+, Node.js LTS 22.19+ e Claude Code nativo 2.1.292+. Use Homebrew se já estiver disponível ou os instaladores oficiais. Não instale Homebrew silenciosamente nem recorra a sudo para corrigir permissões de npm. Na pasta do clone, execute primeiro:
+bash install.sh --dry-run
+Depois, execute:
+bash install.sh
+O instalador instala Claude nativo e OmniRoute se ausentes. Verifique a versão do Claude existente antes de prosseguir. Se python3 não apontar para Python 3.12+, selecione o executável correto por CLAUDE_KIT_PYTHON.
+
+Use ~/.claude, ~/.claude/profiles/router e ~/.claude/launcher para os perfis e suporte; compartilhe o bundle em ~/.gemini/config. A chave OpenRouter deve ser digitada por mim em entrada local oculta e armazenada no Keychain. Nunca solicite a chave no chat nem a coloque em argumentos, logs ou prints. Se seu terminal não permitir entrada oculta, use --skip-key e me oriente a executar localmente replace_key.py do runtime. Eu concluo as autorizações legítimas do Keychain e o login Anthropic nativo. Não use credenciais de outro computador nem fallback em texto puro. Confira ~/.zshrc; se eu usar outra shell, adapte o PATH dela. Reabra o terminal e confira os dois comandos.
+
+Leia README.md, AGENTS.md, models.json e docs/CATALOGO.md antes de alterar arquivos. Primeiro faça a auditoria e o dry-run; depois execute a instalação e as verificações. Preserve configurações existentes, use os backups e a reversão do instalador e não copie perfis privados para o clone. Instale dependências ausentes por fontes oficiais, sem usar runtimes embutidos em outros aplicativos.
+
+Configure claude para a assinatura Anthropic original e clauderouter para OpenRouter, em perfis separados. A instalação global deve funcionar sem depender da pasta clonada. Instale todas as skills, agentes e workflows do bundle; use /workflow-* para evitar conflitos com comandos nativos. Memória pessoal permanece desativada.
+
+Respeite exatamente as funções e duplas de models.json:
+- Orquestrador: Inkling → Nemotron 3 Ultra.
+- Programador principal: Inkling Small → Laguna S 2.1.
+- Especialista visual: Nemotron 3.5 Super VL → Inkling Small.
+- Executor rápido: North Mini Code → Laguna XS 2.1.
+- Programador auxiliar: Laguna XS 2.1 → North Mini Code.
+São sete modelos distintos em dez posições. Preserve os nomes originais e descrições de função em /model, os limites de contexto por modelo e as regras de compactação. Não acrescente modelos pagos ou terceiros. Revalide metadados e informe restrições, expiração ou indisponibilidade; não invente substitutos.
+
+Mantenha as políticas de orquestração separadas: Sonnet/Opus e esforço no claude original; os cinco agentes próprios e as duplas acima no router. Preserve a troca automática por esgotamento reconhecido somente em estado ocioso verificado e sem processos auxiliares; o retorno é manual.
+
+Configure o OmniRoute em ~/.omniroute/.env, escutando em 127.0.0.1:20128, preservando chaves de criptografia existentes. O filtro do kit chama OpenRouter diretamente; OmniRoute não é obrigatório para abrir claude ou clauderouter. Se necessário, inicie omniroute serve --no-open e ajude no primeiro acesso e na conexão OpenRouter pelo dashboard http://127.0.0.1:20128/dashboard/providers/openrouter. Essa conexão é separada da chave protegida do router. Use autenticação legítima; não altere o banco diretamente. Não crie início automático do sistema.
+
+Execute a auditoria pública, os testes do repositório e do runtime, o diagnóstico nativo sem geração, a listagem clauderouter --listar-modelos e a verificação de isolamento dos perfis. Se iniciar OmniRoute, confira saúde HTTP, escuta local e avisos. Distinga testes simulados, login real e disponibilidade dos provedores. Peça autorização antes de testes de geração que consumam cota/créditos.
+
+Entregue os locais finais, comandos de uso, resultados, limitações e reversão. Se a cota, o contexto ou o tempo estiverem acabando, salve CONTINUIDADE.md sem segredos: objetivo, arquivos alterados, backups, etapas e testes concluídos, pendências, operações incertas e próxima ação. Não declare concluído o que não foi verificado.
+```
+
+Prefere instalar pelo terminal? Veja [Windows](../README.md#instalar-no-windows) ou [macOS](../README.md#instalar-no-macos). Para escolher e usar os recursos depois, abra o [catálogo completo de skills, agentes e workflows](CATALOGO.md).
