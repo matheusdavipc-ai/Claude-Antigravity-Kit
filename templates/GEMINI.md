@@ -1,0 +1,3 @@
+# Global development kit for Antigravity
+
+Read ~/.gemini/config/skills/AGENTS.md and the orchestration-kit/ARCHITECTURE.md registry. Select the relevant specialist from ~/.gemini/config/agents. Native skills are in ~/.gemini/config/skills; the workflow-* skills replace legacy workflow discovery. Agents in this kit are Markdown personas, not proof that a native isolated subagent exists. Use only capabilities your tool provides. Follow the user's authorization and preserve existing work. Choose models in Antigravity itself; do not apply the Claude original or router model policy to this tool. Persistent memory is disabled unless its owner configures it explicitly. Maintain project continuity without credentials.

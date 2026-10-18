@@ -1,0 +1,16 @@
+{
+  "_comment": "Provenance of externally-sourced skills in this kit. Reference only — not required at runtime. Use to re-pull or update a skill from its origin.",
+  "version": 1,
+  "skills": {
+    "impeccable": {
+      "source": "pbakaus/impeccable",
+      "sourceType": "github",
+      "skillPath": "config/skills/impeccable/SKILL.md"
+    },
+    "design-motion-principles": {
+      "source": "kylezantos/design-motion-principles",
+      "sourceType": "github",
+      "skillPath": "config/skills/design-motion-principles/SKILL.md"
+    }
+  }
+}

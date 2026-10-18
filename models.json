@@ -1,0 +1,64 @@
+{
+  "names": {
+    "thinkingmachines/inkling:free": "Inkling",
+    "thinkingmachines/inkling-small:free": "Inkling Small",
+    "nvidia/nemotron-3.5-super-vl:free": "Nemotron 3.5 Super VL",
+    "cohere/north-mini-code:free": "North Mini Code",
+    "poolside/laguna-xs-2.1:free": "Laguna XS 2.1",
+    "nvidia/nemotron-3-ultra-550b-a55b:free": "Nemotron 3 Ultra",
+    "poolside/laguna-s-2.1:free": "Laguna S 2.1"
+  },
+  "roles": {
+    "router-orchestrator": [
+      "thinkingmachines/inkling:free",
+      "nvidia/nemotron-3-ultra-550b-a55b:free"
+    ],
+    "router-coder": [
+      "thinkingmachines/inkling-small:free",
+      "poolside/laguna-s-2.1:free"
+    ],
+    "router-visual": [
+      "nvidia/nemotron-3.5-super-vl:free",
+      "thinkingmachines/inkling-small:free"
+    ],
+    "router-fast": [
+      "cohere/north-mini-code:free",
+      "poolside/laguna-xs-2.1:free"
+    ],
+    "router-assistant": [
+      "poolside/laguna-xs-2.1:free",
+      "cohere/north-mini-code:free"
+    ]
+  },
+  "limits_checked_on": "2026-10-18",
+  "limits": {
+    "nvidia/nemotron-3.5-super-vl:free": {
+      "context": 1000000,
+      "max_output": 131072
+    },
+    "thinkingmachines/inkling-small:free": {
+      "context": 1048576,
+      "max_output": 262144
+    },
+    "poolside/laguna-s-2.1:free": {
+      "context": 262144,
+      "max_output": 32768
+    },
+    "thinkingmachines/inkling:free": {
+      "context": 1048576,
+      "max_output": 262144
+    },
+    "poolside/laguna-xs-2.1:free": {
+      "context": 262144,
+      "max_output": 32768
+    },
+    "cohere/north-mini-code:free": {
+      "context": 256000,
+      "max_output": 64000
+    },
+    "nvidia/nemotron-3-ultra-550b-a55b:free": {
+      "context": 1000000,
+      "max_output": 65536
+    }
+  }
+}
