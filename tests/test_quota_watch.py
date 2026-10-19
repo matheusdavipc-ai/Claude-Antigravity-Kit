@@ -18,6 +18,11 @@ class QuotaWatchTests(unittest.TestCase):
         self.temp=tempfile.TemporaryDirectory(); self.root=Path(self.temp.name)
         self.event={'hook_event_name':'PostToolUse','session_id':'fixture'}
     def tearDown(self):self.temp.cleanup()
+    def fresh_checkpoint(self):
+        # Windows file clocks can lag time.time() in an immediate synthetic write.
+        stamp=core.read_json(self.root/'quota-request.json')['time']+1
+        for name in ('HANDOFF.md','quota-decision.json'):
+            os.utime(self.root/name,(stamp,stamp))
     def telemetry(self, used=95, **extra):
         data={'session_id':'fixture','rate_limits':{'seven_day':{'used_percentage':used,'resets_at':time.time()+3600}},**extra}
         q.record(data,self.root)
@@ -41,6 +46,7 @@ class QuotaWatchTests(unittest.TestCase):
         stop={**self.event,'hook_event_name':'Stop'}
         self.assertFalse(q.feedback(self.root,stop)[1])
         (self.root/'HANDOFF.md').write_text('Verified checkpoint',encoding='utf-8')
+        self.fresh_checkpoint()
         self.assertTrue(q.feedback(self.root,stop)[1])
         self.assertFalse(q.feedback(self.root,{**stop,'background_tasks':[{'id':'active'}]})[1])
         self.assertFalse(q.feedback(self.root,{**stop,'session_crons':[{'id':'active'}]})[1])
@@ -77,6 +83,7 @@ class QuotaWatchTests(unittest.TestCase):
         self.telemetry();q.feedback(self.root,self.event)
         (self.root/'HANDOFF.md').write_text('Checkpoint fixture',encoding='utf-8')
         core.atomic_json(self.root/'quota-decision.json',{'session_id':'fixture','action':'transfer'})
+        self.fresh_checkpoint()
         event={**self.event,'hook_event_name':'Stop','cwd':str(self.root),'transcript_path':'fixture'}
         env={**os.environ,'CLAUDE_PERFIS_RUN':str(self.root),'CLAUDE_PERFIS_PROFILE':'original'}
         result=subprocess.run([sys.executable,str(Path(q.__file__).with_name('hook.py'))],input=json.dumps(event),text=True,capture_output=True,env=env)

@@ -36,7 +36,7 @@ class InstallTests(unittest.TestCase):
             home = Path(temp)
             original = home / '.claude/settings.json'
             original.parent.mkdir()
-            original.write_text(json.dumps({'theme': 'light', 'env': {'MY_SETTING': 'keep-me'}, 'permissions': {'additionalDirectories': ['example-directory']}}))
+            original.write_text(json.dumps({'theme': 'light', 'env': {'MY_SETTING': 'keep-me', 'ANTHROPIC_DEFAULT_FABLE_MODEL': 'claude-opus-5-5', 'ANTHROPIC_DEFAULT_FABLE_MODEL_NAME':'Legacy Opus'}, 'permissions': {'additionalDirectories': ['example-directory']}}))
             unrelated = home / '.gemini/config/skills/my-personal-skill/SKILL.md'
             unrelated.parent.mkdir(parents=True)
             unrelated.write_text('unrelated custom skill')
@@ -52,6 +52,9 @@ class InstallTests(unittest.TestCase):
             installed = install.load(original)
             self.assertEqual(installed['theme'], 'light')
             self.assertEqual(installed['env']['MY_SETTING'], 'keep-me')
+            self.assertEqual(installed['env']['ANTHROPIC_DEFAULT_OPUS_MODEL'],'claude-opus-5-5')
+            self.assertFalse(any(k.startswith('ANTHROPIC_DEFAULT_FABLE_MODEL') for k in installed['env']))
+            self.assertNotIn('fable',installed['availableModels'])
             self.assertEqual(installed['permissions']['additionalDirectories'], ['example-directory'])
             self.assertEqual(unrelated.read_text(), 'unrelated custom skill')
             self.assertIn('Existing user instructions.', instructions.read_text())
@@ -67,6 +70,7 @@ class InstallTests(unittest.TestCase):
             repeat.install(native, update_path=False)
             repeated = install.load(original)
             self.assertEqual(len(repeated['hooks']['SessionStart']), 1)
+            self.assertFalse(any(k.startswith('ANTHROPIC_DEFAULT_FABLE_MODEL') for k in repeated['env']))
             self.assertEqual(instructions.read_text().count('<!-- claude-openrouter-kit:start -->'), 1)
             self.assertEqual(unrelated.read_text(), 'unrelated custom skill')
             with patch.object(rollback, 'KIT', repeat.kit):
@@ -77,6 +81,7 @@ class InstallTests(unittest.TestCase):
                 rollback.rollback()
             self.assertEqual(install.load(original)['theme'], 'light')
             self.assertNotIn('hooks', install.load(original))
+            self.assertEqual(install.load(original)['env']['ANTHROPIC_DEFAULT_FABLE_MODEL'],'claude-opus-5-5')
             self.assertEqual(instructions.read_text(), 'Existing user instructions.')
             self.assertEqual(unrelated.read_text(), 'unrelated custom skill')
 

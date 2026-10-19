@@ -123,7 +123,12 @@ class Installer:
         env = original.setdefault('env', {})
         for key in ('ANTHROPIC_API_KEY', 'ANTHROPIC_AUTH_TOKEN', 'ANTHROPIC_BASE_URL'):
             env.pop(key, None)
-        env.update({'ANTHROPIC_DEFAULT_OPUS_MODEL': 'claude-opus-5-5', 'ANTHROPIC_DEFAULT_SONNET_MODEL': 'claude-sonnet-5-5', 'ANTHROPIC_DEFAULT_HAIKU_MODEL': 'claude-sonnet-5-5', 'ANTHROPIC_DEFAULT_FABLE_MODEL': 'claude-opus-5-5'})
+        env.update({'ANTHROPIC_DEFAULT_OPUS_MODEL': 'claude-opus-5-5', 'ANTHROPIC_DEFAULT_SONNET_MODEL': 'claude-sonnet-5-5', 'ANTHROPIC_DEFAULT_HAIKU_MODEL': 'claude-sonnet-5-5'})
+        # A Fable override equal to Opus makes native billing classify Opus as Fable.
+        # The original profile uses native Fable resolution and excludes it in availableModels.
+        for key in list(env):
+            if key.startswith('ANTHROPIC_DEFAULT_FABLE_MODEL'):
+                env.pop(key)
         original.setdefault('model', 'sonnet')
         if str(original['model']).removesuffix('[1m]') not in ('sonnet','opus','opusplan','claude-sonnet-5-5','claude-opus-5-5'):
             original['model'] = 'sonnet'
