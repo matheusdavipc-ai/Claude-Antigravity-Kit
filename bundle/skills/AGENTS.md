@@ -143,7 +143,7 @@ does this DIFFER from generic output?
 
 ### Model and effort policy
 
-Follow the active profile's CLAUDE.md. The original profile uses Sonnet/Opus and its own effort triage. The OpenRouter profile uses its mandatory five principal/reserve pairs and named role agents; do not import the Anthropic-only policy. Antigravity chooses models through its own tool.
+Follow the active profile's CLAUDE.md. The original profile uses Haiku (read-only), Sonnet and Opus with its own effort triage; Fable only on request. The OpenRouter profile uses its mandatory five principal/reserve pairs and named role agents; do not import the Anthropic-only policy. Antigravity chooses models through its own tool.
 
 ### ✍️ Writing Quality (Global — human-facing text)
 

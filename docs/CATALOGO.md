@@ -19,7 +19,7 @@ Skills e agentes não são provedores novos nem contas separadas. Invocá-los us
 
 ### Claude Code original (`claude`)
 
-Abra o terminal na pasta do projeto e execute `claude`. Digite `/` para procurar as skills disponíveis. Você pode invocar `/nome-da-skill instrução` ou pedir em linguagem natural que a IA aplique a skill. Para um especialista, peça “Use o agente backend-specialist para…”; `/agents` permite inspecionar os subagentes registrados. Apenas citar um nome não comprova que houve uma delegação: confira o resultado informado pela ferramenta. A política Sonnet/Opus e esforço vem do CLAUDE.md original.
+Abra o terminal na pasta do projeto e execute `claude`. Digite `/` para procurar as skills disponíveis. Você pode invocar `/nome-da-skill instrução` ou pedir em linguagem natural que a IA aplique a skill. Para um especialista, peça “Use o agente backend-specialist para…”; `/agents` permite inspecionar os subagentes registrados. Apenas citar um nome não comprova que houve uma delegação: confira o resultado informado pela ferramenta. A política de modelos (Haiku para leitura, Sonnet e Opus para o trabalho, Fable só sob pedido) e o esforço vêm do CLAUDE.md original.
 
 Exemplos:
 

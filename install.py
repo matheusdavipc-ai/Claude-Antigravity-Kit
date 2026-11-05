@@ -30,6 +30,18 @@ def managed_block(existing, addition):
         return re.sub(pattern, lambda match: block, existing, flags=re.S)
     return existing.rstrip() + ('\n\n' if existing.strip() else '') + block + '\n'
 
+ORIGINAL_MODELS = ['opus', 'sonnet', 'haiku', 'fable', 'claude-opus-5-5', 'claude-sonnet-5-5', 'claude-haiku-5-5', 'claude-fable-5-1']
+ORIGINAL_ALIASES = {'opus', 'sonnet', 'haiku', 'fable', 'opusplan', 'best', 'default'}
+LEGACY_HAIKU_REMAP = 'claude-sonnet-5-5'
+ROUTER_WRITE_MATCHER = 'Agent|Edit|Write|MultiEdit|NotebookEdit|Bash|PowerShell'
+
+def original_model_valid(model):
+    # Anthropic aliases and claude-* IDs only; router IDs (vendor/model:free) never reach the original.
+    if not isinstance(model, str) or not model:
+        return False
+    base = model.removesuffix('[1m]')
+    return base in ORIGINAL_ALIASES or bool(re.fullmatch(r'claude-[a-z0-9.-]+', base))
+
 def hook_config(python, kit, events):
     # command + args is supported by the targeted Claude Code release.
     return {event: [{'matcher': matcher, 'hooks': [{'type': 'command', 'command': str(python), 'args': [str(kit / 'runtime/hook.py')], 'timeout': 15}]}] for event, matcher in events.items()}
@@ -123,16 +135,20 @@ class Installer:
         env = original.setdefault('env', {})
         for key in ('ANTHROPIC_API_KEY', 'ANTHROPIC_AUTH_TOKEN', 'ANTHROPIC_BASE_URL'):
             env.pop(key, None)
-        env.update({'ANTHROPIC_DEFAULT_OPUS_MODEL': 'claude-opus-5-5', 'ANTHROPIC_DEFAULT_SONNET_MODEL': 'claude-sonnet-5-5', 'ANTHROPIC_DEFAULT_HAIKU_MODEL': 'claude-sonnet-5-5'})
+        env.update({'ANTHROPIC_DEFAULT_OPUS_MODEL': 'claude-opus-5-5', 'ANTHROPIC_DEFAULT_SONNET_MODEL': 'claude-sonnet-5-5'})
+        # Haiku resolves natively. Drop only the remap written by earlier kit versions.
+        if env.get('ANTHROPIC_DEFAULT_HAIKU_MODEL') == LEGACY_HAIKU_REMAP:
+            env.pop('ANTHROPIC_DEFAULT_HAIKU_MODEL')
         # A Fable override equal to Opus makes native billing classify Opus as Fable.
-        # The original profile uses native Fable resolution and excludes it in availableModels.
+        # The original profile uses native Fable resolution: never write a Fable override.
         for key in list(env):
             if key.startswith('ANTHROPIC_DEFAULT_FABLE_MODEL'):
                 env.pop(key)
-        original.setdefault('model', 'sonnet')
-        if str(original['model']).removesuffix('[1m]') not in ('sonnet','opus','opusplan','claude-sonnet-5-5','claude-opus-5-5'):
-            original['model'] = 'sonnet'
-        original['availableModels'] = ['sonnet', 'opus', 'claude-sonnet-5-5', 'claude-opus-5-5']
+        # Preserve the user's model; reset only values that cannot reach Anthropic.
+        if not original_model_valid(original.get('model')):
+            original['model'] = 'opus'
+        existing = [model for model in original.get('availableModels', []) if original_model_valid(model)]
+        original['availableModels'] = ORIGINAL_MODELS + [model for model in existing if model not in ORIGINAL_MODELS]
         original.setdefault('permissions', {'defaultMode': 'default'})
         events = {'UserPromptSubmit': '', 'SessionStart': '', 'PreToolUse': '', 'PostToolUse': '', 'PostToolUseFailure': '', 'SubagentStart': '', 'SubagentStop': '', 'Stop': '', 'StopFailure': 'rate_limit'}
         hooks = original.setdefault('hooks', {})
@@ -152,7 +168,8 @@ class Installer:
         settings.setdefault('env', {}).update(router_env())
         for key in ('ANTHROPIC_API_KEY','ANTHROPIC_AUTH_TOKEN','ANTHROPIC_BASE_URL'):
             settings['env'].pop(key, None)
-        settings.setdefault('hooks', {})['PreToolUse'] = hook_config(sys.executable, self.kit, {'PreToolUse': 'Agent'})['PreToolUse']
+        # Agent pins role routes; Edit/Write/shell are gated so the coordinator delegates code.
+        settings.setdefault('hooks', {})['PreToolUse'] = hook_config(sys.executable, self.kit, {'PreToolUse': ROUTER_WRITE_MATCHER})['PreToolUse']
         self.write(router / 'settings.json', settings)
         self.write(router / 'upstream.json', {**load(router / 'upstream.json'), 'url': 'http://127.0.0.1:20128', 'transport': 'omniroute'})
         for template, path in (('CLAUDE.md', self.home / '.claude/CLAUDE.md'), ('GEMINI.md', self.home / '.gemini/GEMINI.md')):

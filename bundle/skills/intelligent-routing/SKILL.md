@@ -233,8 +233,9 @@ User: "Add mobile support to the web app"
 ### With Model Routing (Claude Code)
 
 - The complexity you assess here maps directly to the model triage in
-  `~/.claude/CLAUDE.md` → 1A: SIMPLE → Sonnet (low/medium), MODERATE → Sonnet (high),
-  COMPLEX → Opus (high/xhigh). Only Sonnet or Opus — never Haiku or Fable.
+  `~/.claude/CLAUDE.md` → 1A: READ-ONLY exploration → Haiku (low), SIMPLE → Sonnet
+  (low/medium), MODERATE → Sonnet (high), COMPLEX → Opus (high/xhigh). Fable only when the
+  user asks for it or after Opus/xhigh failed.
 - Every agent you auto-invoke receives that `model` + `effort` on the Agent tool call.
 
 ### With Bootstrap Rules (GEMINI.md / CLAUDE.md)

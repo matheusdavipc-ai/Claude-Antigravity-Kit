@@ -36,7 +36,7 @@ Respeite exatamente as funções e duplas de models.json:
 - Programador auxiliar: Laguna XS 2.1 → North Mini Code.
 São sete modelos distintos em dez posições. Preserve os nomes originais e descrições de função em /model, os limites de contexto por modelo e as regras de compactação. Não acrescente modelos pagos ou terceiros. Revalide metadados e informe restrições, expiração ou indisponibilidade; não invente substitutos.
 
-Mantenha as políticas de orquestração separadas: Sonnet/Opus e esforço no claude original; os cinco agentes próprios e as duplas acima no router. Preserve a troca automática por esgotamento reconhecido e o preparo preventivo em 95% da assinatura Anthropic, somente após checkpoint e em estado ocioso verificado sem processos auxiliares; o retorno é manual. Entre contas OpenRouter, mantenha a mesma sessão sem checkpoint em 95%.
+Mantenha as políticas de orquestração separadas: Haiku (leitura), Sonnet, Opus e esforço no claude original, com Fable só sob pedido; os cinco agentes próprios e as duplas acima no router. Preserve a troca automática por esgotamento reconhecido e o preparo preventivo em 95% da assinatura Anthropic, somente após checkpoint e em estado ocioso verificado sem processos auxiliares; o retorno é manual. Entre contas OpenRouter, mantenha a mesma sessão sem checkpoint em 95%.
 
 Configure o OmniRoute em ~/.omniroute/.env, escutando em 127.0.0.1:20128, preservando chaves de criptografia existentes. O fluxo obrigatório é clauderouter → filtro de modelos gratuitos → OmniRoute → OpenRouter. O original continua direto na Anthropic. OmniRoute deve estar pronto antes da troca automática para o router. Antes de iniciar, verifique http://127.0.0.1:20128/api/health e confirme que a porta pertence ao OmniRoute. Se ele já estiver saudável, reutilize a instância e execute omniroute dashboard para abrir o painel; não inicie outro servidor. Se estiver parado e a porta estiver livre, inicie omniroute serve --no-open. Se a porta pertencer a outro programa ou a saúde falhar, investigue sem encerrar processos automaticamente. Ajude no primeiro acesso e na conexão OpenRouter pelo dashboard http://127.0.0.1:20128/dashboard/providers/openrouter. Cadastre main1 com prioridade 1; outras contas que eu já possuir seguem main2, main3 etc., com prioridade numérica correspondente. Suporte 10–15 contas ou mais, sem criá-las automaticamente. Não invente nem crie contas. Execute python ~/.claude/launcher/runtime/omniroute_pool.py com o Python instalado. Esse comando usa o cliente oficial do OmniRoute para configurar fill-first somente no OpenRouter e uma chave local protegida e restrita aos sete modelos. A seleção de contas fica com OmniRoute, antes das reservas de modelo. Use autenticação legítima; não altere o banco diretamente. Não crie início automático do sistema.
 
@@ -73,7 +73,7 @@ Respeite exatamente as funções e duplas de models.json:
 - Programador auxiliar: Laguna XS 2.1 → North Mini Code.
 São sete modelos distintos em dez posições. Preserve os nomes originais e descrições de função em /model, os limites de contexto por modelo e as regras de compactação. Não acrescente modelos pagos ou terceiros. Revalide metadados e informe restrições, expiração ou indisponibilidade; não invente substitutos.
 
-Mantenha as políticas de orquestração separadas: Sonnet/Opus e esforço no claude original; os cinco agentes próprios e as duplas acima no router. Preserve a troca automática por esgotamento reconhecido e o preparo preventivo em 95% da assinatura Anthropic, somente após checkpoint e em estado ocioso verificado sem processos auxiliares; o retorno é manual. Entre contas OpenRouter, mantenha a mesma sessão sem checkpoint em 95%.
+Mantenha as políticas de orquestração separadas: Haiku (leitura), Sonnet, Opus e esforço no claude original, com Fable só sob pedido; os cinco agentes próprios e as duplas acima no router. Preserve a troca automática por esgotamento reconhecido e o preparo preventivo em 95% da assinatura Anthropic, somente após checkpoint e em estado ocioso verificado sem processos auxiliares; o retorno é manual. Entre contas OpenRouter, mantenha a mesma sessão sem checkpoint em 95%.
 
 Configure o OmniRoute em ~/.omniroute/.env, escutando em 127.0.0.1:20128, preservando chaves de criptografia existentes. O fluxo obrigatório é clauderouter → filtro de modelos gratuitos → OmniRoute → OpenRouter. O original continua direto na Anthropic. OmniRoute deve estar pronto antes da troca automática para o router. Antes de iniciar, verifique http://127.0.0.1:20128/api/health e confirme que a porta pertence ao OmniRoute. Se ele já estiver saudável, reutilize a instância e execute omniroute dashboard para abrir o painel; não inicie outro servidor. Se estiver parado e a porta estiver livre, inicie omniroute serve --no-open. Se a porta pertencer a outro programa ou a saúde falhar, investigue sem encerrar processos automaticamente. Ajude no primeiro acesso e na conexão OpenRouter pelo dashboard http://127.0.0.1:20128/dashboard/providers/openrouter. Cadastre main1 com prioridade 1; outras contas que eu já possuir seguem main2, main3 etc., com prioridade numérica correspondente. Suporte 10–15 contas ou mais, sem criá-las automaticamente. Não invente nem crie contas. Execute python ~/.claude/launcher/runtime/omniroute_pool.py com o Python instalado. Esse comando usa o cliente oficial do OmniRoute para configurar fill-first somente no OpenRouter e uma chave local protegida e restrita aos sete modelos. A seleção de contas fica com OmniRoute, antes das reservas de modelo. Use autenticação legítima; não altere o banco diretamente. Não crie início automático do sistema.
 
@@ -86,7 +86,7 @@ Prefere instalar pelo terminal? Veja [Windows](#instalar-no-windows) ou [macOS](
 
 ## O que é instalado
 
-- `claude`: perfil original em `~/.claude`, login da assinatura Anthropic, Sonnet 5.5 / Opus 5.5.
+- `claude`: perfil original em `~/.claude`, login da assinatura Anthropic, Opus 5.5 (padrão), Sonnet 5.5, Haiku 5.5 e Fable 5.1 com resolução nativa.
 - `clauderouter`: perfil independente em `~/.claude/profiles/router`, com a equipe gratuita abaixo.
 - Suporte dos comandos em `~/.claude/launcher`, compartilhamento em `~/.gemini/config/{skills,agents,global_workflows}`.
 - OmniRoute instalado por npm e configurado em `~/.omniroute/.env`, com acesso somente em `127.0.0.1:20128`.
@@ -151,7 +151,7 @@ Nenhum serviço inicia automaticamente com o sistema. **OmniRoute precisa estar 
 
 ### Sequência de alternância
 
-1. O original usa sua assinatura Anthropic e a política Sonnet/Opus.
+1. O original usa sua assinatura Anthropic e a política Haiku (leitura), Sonnet e Opus; Fable só sob pedido.
 2. Um limite de assinatura reconhecido prepara a continuidade e abre o router quando o encerramento é seguro.
 3. No router, OmniRoute usa primeiro a conta OpenRouter ativa de prioridade 1 (`main1`). Ao reconhecer cota/limite e colocar essa conta em espera, tenta a próxima elegível (`main2`, prioridade 2), mantendo o modelo solicitado.
 4. O filtro só tenta a reserva de modelo após o OmniRoute devolver uma falha elegível. Não repete uma chamada após falha de transporte com resultado incerto nem após iniciar a entrega da resposta.
@@ -203,7 +203,7 @@ As mensagens `Loaded env from ...` informam de onde as configurações foram car
 
 ## Continuidade e orquestração
 
-O original mantém a triagem Sonnet/Opus e os agentes especialistas do kit. O router usa os cinco agentes de função e a tabela obrigatória; omite `model` e `effort` na chamada Agent e usa o modelo definido no frontmatter. As políticas são separadas.
+O original mantém a triagem Haiku/Sonnet/Opus (Fable sob pedido) e os agentes especialistas do kit. O router usa os cinco agentes de função e a tabela obrigatória; omite `model` e `effort` na chamada Agent e usa o modelo definido no frontmatter. As políticas são separadas.
 
 Ao reconhecer esgotamento da assinatura, o lançador transfere o trabalho para o router **somente quando verifica que a sessão está ociosa e sem processos descendentes**. Não troca por qualquer 429, erro de login ou indisponibilidade de rede. Processos destacados e estado desconhecido bloqueiam encerramento forçado. A continuidade contém texto selecionado, com remoção de credenciais reconhecíveis, e não uma reprodução integral da sessão. O retorno à assinatura é manual. A mudança de provedor envia o contexto selecionado ao OpenRouter; use projetos compatíveis com as condições dos provedores gratuitos.
 

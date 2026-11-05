@@ -13,10 +13,11 @@ $ARGUMENTS
 
 ## 🧭 Model Routing (Claude Code)
 
-Every agent call in this workflow passes `model` (`sonnet` or `opus` — never haiku/fable)
-and `effort`, chosen per sub-task with the triage table in `~/.claude/CLAUDE.md` → 1A.
-Typical split: `project-planner` and `security-auditor` → `opus`/`high`; routine
-implementation and tests → `sonnet`/`medium`–`high`; anything critical → `opus`/`xhigh`.
+Every agent call in this workflow passes `model` and `effort`, chosen per sub-task with the
+triage table in `~/.claude/CLAUDE.md` → 1A. Typical split: read-only exploration (`Explore`,
+codebase mapping, summaries) → `haiku`/`low`; `project-planner` and `security-auditor` →
+`opus`/`high`; routine implementation and tests → `sonnet`/`medium`–`high`; anything critical →
+`opus`/`xhigh`. `fable` only when the user asks for it or after `opus`/`xhigh` failed.
 
 ---
 

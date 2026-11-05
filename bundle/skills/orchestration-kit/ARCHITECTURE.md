@@ -202,8 +202,9 @@ Slash commands. Invoke with `/command`.
 
 ## Model Routing (Claude Code only)
 
-Claude Code triages every task before acting and runs it on `sonnet` (levels 1–3) or
-`opus` (levels 4–5) with a matching effort — never Haiku or Fable. Source of truth:
+Claude Code triages every task before acting and runs it on `haiku` (level 0, read-only),
+`sonnet` (levels 1–3) or `opus` (levels 4–5) with a matching effort; `fable` only when the
+user asks or after `opus`/`xhigh` failed. Source of truth:
 `~/.claude/CLAUDE.md` → section 1A. Every Agent-tool call passes `model` + `effort`.
 Antigravity ignores this (model chosen in its own picker).
 

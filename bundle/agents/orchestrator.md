@@ -34,18 +34,21 @@ Before invoking ANY agent (specialist or built-in), triage that sub-task with th
 
 | Sub-task difficulty | `model` | `effort` |
 |---|---|---|
+| Level 0 · Read/explore | `haiku` | `low` |
 | Level 1 · Trivial | `sonnet` | `low` |
 | Level 2 · Simple | `sonnet` | `medium` |
 | Level 3 · Moderate | `sonnet` | `high` |
 | Level 4 · Hard | `opus` | `high` |
-| Level 5 · Critical | `opus` | `xhigh` |
+| Level 5 · Critical | `opus` (`fable` only if the user asks or `opus` failed) | `xhigh` |
 
-- **Only `sonnet` or `opus`.** Never `haiku`, never `fable`, never omit `model` (built-in
-  `Explore` would silently fall back to Haiku).
+- **`haiku` only for read-only slices** (Explore, codebase mapping, summaries); never for
+  edits or decisions. **`fable` only on the user's request** or after `opus`/`xhigh` failed.
+  Never omit `model`.
 - Triage each agent's slice separately: `project-planner`/`security-auditor`/architecture
   slices usually land on Opus; mechanical edits, tests for existing code, docs and SEO meta
   usually land on Sonnet.
-- A Sonnet slice that fails or comes back weak → re-run it on `opus`/`high` before
+- A Haiku read that comes back incomplete → re-run it on `sonnet`. A Sonnet slice that
+  fails or comes back weak → re-run it on `opus`/`high` before
   synthesizing. Note the model used per agent in the Orchestration Report.
 - In Antigravity, ignore this section (no per-call model parameter there).
 
@@ -427,7 +430,7 @@ Claude Code has built-in agents that work alongside custom agents:
 
 | Built-in | Purpose | When Used |
 |----------|---------|-----------|
-| **Explore** | Fast codebase search (defaults to Haiku → ALWAYS pass `model: "sonnet"`) | Quick file discovery |
+| **Explore** | Fast read-only codebase search (pass `model: "haiku"`, effort `low`) | Quick file discovery |
 | **Plan** | Research for planning (pass `model` per triage) | Plan mode research |
 | **General-purpose** | Complex multi-step tasks (pass `model` per triage) | Heavy lifting |
 

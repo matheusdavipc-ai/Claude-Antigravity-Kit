@@ -67,3 +67,7 @@ Validação local: 42 testes do repositório e 21 do runtime passaram. O teste d
 O instalador anterior atribuía claude-opus-5-5 simultaneamente a ANTHROPIC_DEFAULT_OPUS_MODEL e ANTHROPIC_DEFAULT_FABLE_MODEL. Esse conflito era consistente com a confirmação de créditos Fable ao selecionar a linha Opus no Claude Code 2.1.304. O original agora remove os overrides de Fable e mantém o alias Opus no ID correto, com a seleção limitada a Sonnet e Opus. Os mapeamentos exclusivos do perfil OpenRouter permanecem separados.
 
 O teste de instalação parte explicitamente do mapeamento conflitante e verifica sua remoção, a preservação do ID Opus, a reaplicação idempotente e a restauração da configuração anterior na reversão. Selecionar um modelo no menu sem geração não comprova disponibilidade de cota ou uma resposta real desse modelo.
+
+## Haiku e Fable no perfil original (05/11/2026)
+
+O instalador deixou de remapear o alias Haiku para Sonnet e de limitar availableModels a Sonnet e Opus. A lista agora inclui haiku, fable, claude-haiku-5-5 e claude-fable-5-1, com resolução nativa. Continua proibido gravar ANTHROPIC_DEFAULT_FABLE_MODEL, pelo motivo de faturamento descrito acima. O modelo configurado pelo usuário é preservado; só um ID que não chega à Anthropic (por exemplo, um ID do router) volta para opus. A política de uso fica na seção 1A: Haiku para leitura e exploração, Sonnet e Opus para o trabalho, Fable só sob pedido ou depois de falha do Opus.

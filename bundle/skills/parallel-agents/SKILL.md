@@ -115,7 +115,7 @@ These work alongside custom agents:
 
 | Agent | Model | Purpose |
 |-------|-------|---------|
-| **Explore** | Haiku by default — in this kit ALWAYS pass `model: "sonnet"` (Haiku is not allowed) | Fast read-only codebase search |
+| **Explore** | Haiku (`model: "haiku"`, effort `low`) — read-only only | Fast read-only codebase search |
 | **Plan** | Sonnet | Research during plan mode |
 | **General-purpose** | Sonnet | Complex multi-step modifications |
 

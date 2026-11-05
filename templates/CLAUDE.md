@@ -15,7 +15,7 @@ answering — you MUST, in this order:
 1. Read `~/.claude/skills/AGENTS.md` (the canonical rules; junction to the shared file).
 2. Read `~/.claude/skills/orchestration-kit/ARCHITECTURE.md` (the registry of every skill,
    agent, and workflow). Route only to things listed there.
-3. **Triage the difficulty and pick the model + effort** (section 1A — Sonnet or Opus only).
+3. **Triage the difficulty and pick the model + effort** (section 1A — Haiku for reading, Sonnet/Opus for work, Fable on request).
    Every task, every command, every file change goes through this first.
 4. Apply the **Agent Routing** (section 1) and the **Socratic Gate** (section 2) below.
 5. Use persistent memory only when explicitly configured by its owner; otherwise keep continuity in the current project.
@@ -30,9 +30,10 @@ triage, routing and the gate — it takes only a moment and is mandatory.
 Before doing ANY task — running a command, editing a file, researching, building — first
 judge how hard it is, then run it on the right model at the right effort.
 
-**Allowed models: `sonnet` and `opus` ONLY.** Never use Haiku or Fable — not in subagents,
-not in built-in agents (the built-in `Explore` agent defaults to Haiku, so ALWAYS pass a
-model when you use it), not as a fallback.
+**Allowed models: `haiku`, `sonnet` and `opus`. `fable` only when the user asks for it, or
+after `opus`/`xhigh` already failed on the same task.** Haiku is for read-only work: finding
+files, mapping the codebase, summarizing docs or logs. The built-in `Explore` agent and
+research subagents may run on Haiku. Never use Haiku to edit files or make decisions.
 
 **How it works in Claude Code.** The main conversation is the triage desk and coordinator.
 It cannot change its own model, so it hands the execution to a subagent through the Agent
@@ -44,21 +45,24 @@ update Claude Code.)
 
 | Level | Typical tasks | Model | Effort |
 | --- | --- | --- | --- |
-| **1 · Trivial** | Read/list files, run a known command, rename, typo, small copy/text tweak, formatting | `sonnet` | `low` |
+| **0 · Read/explore** | Find files, map the codebase, summarize docs/logs, read-only research | `haiku` | `low` |
+| **1 · Trivial** | Run a known command, rename, typo, small copy/text tweak, formatting | `sonnet` | `low` |
 | **2 · Simple** | Single-file change with a clear spec, small component, bug with an obvious cause, tests for existing code, README/docs, SEO meta tags, writing/copy + `avoid-ai-writing` pass | `sonnet` | `medium` |
 | **3 · Moderate** | 2–4 files following an existing pattern, a feature that copies project conventions, routine refactor, E2E tests | `sonnet` | `high` |
 | **4 · Hard** | Multi-domain feature, bug with unknown root cause, architecture/stack decision, auth/payments/client data, performance investigation, planning a new project | `opus` | `high` |
-| **5 · Critical** | Production deploy/rollback, DB migration on real data, security audit, large refactor/migration, something a previous attempt failed to fix, orchestrating a whole new system | `opus` | `xhigh` |
+| **5 · Critical** | Production deploy/rollback, DB migration on real data, security audit, large refactor/migration, something a previous attempt failed to fix, orchestrating a whole new system | `opus` (`fable` only if the user asks or `opus` already failed) | `xhigh` |
 
 **Tie-breakers**
 
 - In doubt between two levels → take the higher one.
 - Irreversible, production, money, credentials or client data → level 4 at minimum.
-- **Escalate, never insist:** if a Sonnet run fails, stalls, or returns shaky work → redo it
-  on `opus`/`high`. If `opus`/`high` fails → `opus`/`xhigh`.
-- `max` effort only when the user asks for it explicitly.
-- Multi-step work: triage EACH sub-task on its own (e.g. plan on `opus`/`high`, then the
-  mechanical edits on `sonnet`/`medium`, then the review on `opus`/`high`).
+- **Escalate, never insist:** if a Haiku read comes back incomplete → redo it on `sonnet`. If a
+  Sonnet run fails, stalls, or returns shaky work → redo it on `opus`/`high`. If `opus`/`high`
+  fails → `opus`/`xhigh`. If `opus`/`xhigh` fails → stop and offer `fable` to the user.
+- `fable` and `max` effort only when the user asks for them explicitly (or, for `fable`, after
+  `opus` failed as above).
+- Multi-step work: triage EACH sub-task on its own (e.g. map the code on `haiku`/`low`, plan on
+  `opus`/`high`, the mechanical edits on `sonnet`/`medium`, the review on `opus`/`high`).
 
 ### Step 2 — Announce (together with the agent line)
 
@@ -69,9 +73,10 @@ update Claude Code.)
 
 ### Step 3 — Execute on that model
 
-Invoke the specialist from section 1 with the Agent tool, passing `model: "sonnet"` or
-`model: "opus"` and `effort: "<low|medium|high|xhigh>"`. If no specialist fits, use the
-`general-purpose` agent with the same parameters.
+Invoke the specialist from section 1 with the Agent tool, passing `model: "haiku"`,
+`model: "sonnet"`, `model: "opus"` (or `model: "fable"` under the rule above) and
+`effort: "<low|medium|high|xhigh>"`. If no specialist fits, use the `general-purpose` agent
+with the same parameters; for read-only exploration use `Explore` with `model: "haiku"`.
 
 **Stays in the main conversation (no delegation):** the triage itself, Socratic Gate
 questions, reading this bootstrap / the registry / the Brain index, short answers to pure

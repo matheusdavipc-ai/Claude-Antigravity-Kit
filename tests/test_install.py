@@ -36,7 +36,7 @@ class InstallTests(unittest.TestCase):
             home = Path(temp)
             original = home / '.claude/settings.json'
             original.parent.mkdir()
-            original.write_text(json.dumps({'theme': 'light', 'env': {'MY_SETTING': 'keep-me', 'ANTHROPIC_DEFAULT_FABLE_MODEL': 'claude-opus-5-5', 'ANTHROPIC_DEFAULT_FABLE_MODEL_NAME':'Legacy Opus'}, 'permissions': {'additionalDirectories': ['example-directory']}}))
+            original.write_text(json.dumps({'theme': 'light', 'model': 'fable', 'availableModels': ['sonnet', 'opus', 'claude-sonnet-5', 'thinkingmachines/inkling:free'], 'env': {'MY_SETTING': 'keep-me', 'ANTHROPIC_DEFAULT_HAIKU_MODEL': 'claude-sonnet-5-5', 'ANTHROPIC_DEFAULT_FABLE_MODEL': 'claude-opus-5-5', 'ANTHROPIC_DEFAULT_FABLE_MODEL_NAME':'Legacy Opus'}, 'permissions': {'additionalDirectories': ['example-directory']}}))
             unrelated = home / '.gemini/config/skills/my-personal-skill/SKILL.md'
             unrelated.parent.mkdir(parents=True)
             unrelated.write_text('unrelated custom skill')
@@ -54,8 +54,17 @@ class InstallTests(unittest.TestCase):
             self.assertEqual(installed['env']['MY_SETTING'], 'keep-me')
             self.assertEqual(installed['env']['ANTHROPIC_DEFAULT_OPUS_MODEL'],'claude-opus-5-5')
             self.assertFalse(any(k.startswith('ANTHROPIC_DEFAULT_FABLE_MODEL') for k in installed['env']))
-            self.assertNotIn('fable',installed['availableModels'])
+            # Haiku and Fable resolve natively in the original profile.
+            self.assertNotIn('ANTHROPIC_DEFAULT_HAIKU_MODEL', installed['env'])
+            for model in ('opus', 'sonnet', 'haiku', 'fable', 'claude-haiku-5-5', 'claude-fable-5-1'):
+                self.assertIn(model, installed['availableModels'])
+            self.assertIn('claude-sonnet-5', installed['availableModels'])
+            self.assertNotIn('thinkingmachines/inkling:free', installed['availableModels'])
+            self.assertEqual(installed['model'], 'fable')
+            self.assertNotIn('ANTHROPIC_BASE_URL', installed['env'])
             self.assertEqual(installed['permissions']['additionalDirectories'], ['example-directory'])
+            router_hooks = install.load(home / '.claude/profiles/router/settings.json')['hooks']['PreToolUse']
+            self.assertEqual(set(router_hooks[0]['matcher'].split('|')), {'Agent','Edit','Write','MultiEdit','NotebookEdit','Bash','PowerShell'})
             self.assertEqual(unrelated.read_text(), 'unrelated custom skill')
             self.assertIn('Existing user instructions.', instructions.read_text())
             router = install.load(home / '.claude/profiles/router/settings.json')
@@ -71,6 +80,8 @@ class InstallTests(unittest.TestCase):
             repeated = install.load(original)
             self.assertEqual(len(repeated['hooks']['SessionStart']), 1)
             self.assertFalse(any(k.startswith('ANTHROPIC_DEFAULT_FABLE_MODEL') for k in repeated['env']))
+            self.assertEqual(repeated['model'], 'fable')
+            self.assertEqual(repeated['availableModels'], installed['availableModels'])
             self.assertEqual(instructions.read_text().count('<!-- claude-openrouter-kit:start -->'), 1)
             self.assertEqual(unrelated.read_text(), 'unrelated custom skill')
             with patch.object(rollback, 'KIT', repeat.kit):
@@ -84,6 +95,26 @@ class InstallTests(unittest.TestCase):
             self.assertEqual(install.load(original)['env']['ANTHROPIC_DEFAULT_FABLE_MODEL'],'claude-opus-5-5')
             self.assertEqual(instructions.read_text(), 'Existing user instructions.')
             self.assertEqual(unrelated.read_text(), 'unrelated custom skill')
+
+    def test_original_model_defaults_and_custom_haiku_preserved(self):
+        with tempfile.TemporaryDirectory() as temp:
+            home = Path(temp)
+            original = home / '.claude/settings.json'
+            original.parent.mkdir()
+            native = home / '.local/bin/claude.exe'
+            native.parent.mkdir(parents=True)
+            native.write_text('test fixture only')
+            # Absent model -> Opus; a router ID leaked into the original is reset; a user's own Haiku pin is kept.
+            for before, expected in ((None, 'opus'), ('thinkingmachines/inkling:free[1m]', 'opus'), ('claude-opus-5-5[1m]', 'claude-opus-5-5[1m]'), ('sonnet', 'sonnet')):
+                data = {'env': {'ANTHROPIC_DEFAULT_HAIKU_MODEL': 'claude-haiku-5-5'}}
+                if before:
+                    data['model'] = before
+                original.write_text(json.dumps(data))
+                install.Installer(home).install(native, update_path=False)
+                installed = install.load(original)
+                self.assertEqual(installed['model'], expected)
+                self.assertEqual(installed['env']['ANTHROPIC_DEFAULT_HAIKU_MODEL'], 'claude-haiku-5-5')
+                self.assertEqual(installed['availableModels'][:8], install.ORIGINAL_MODELS)
 
     def test_external_link_refused(self):
         with tempfile.TemporaryDirectory() as temp, tempfile.TemporaryDirectory() as external:
