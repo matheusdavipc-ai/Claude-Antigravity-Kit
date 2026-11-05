@@ -8,7 +8,8 @@ from pathlib import Path
 from core import atomic_json, is_quota, ROLES
 
 def main():
-    event = json.load(sys.stdin)
+    # Claude Code sends UTF-8; the Windows locale codec would mangle paths such as espaço.
+    event = json.loads(sys.stdin.buffer.read().decode('utf-8-sig'))
     profile = os.environ.get('CLAUDE_PERFIS_PROFILE')
     name = event.get('hook_event_name')
     if profile == 'router' and name == 'PreToolUse' and event.get('tool_name') == 'Agent':
@@ -24,6 +25,15 @@ def main():
         else:
             print(json.dumps({'hookSpecificOutput':{'hookEventName':'PreToolUse','permissionDecision':'deny',
                 'permissionDecisionReason':'Use um dos agentes router-coder, router-visual, router-fast ou router-assistant.'}}))
+        return
+    if profile == 'router' and name == 'PreToolUse':
+        # Coordinator delegates code; every agent stays inside the project folders.
+        from router_gate import check
+        reason = check(event)
+        if reason:
+            print(json.dumps({'hookSpecificOutput':{'hookEventName':'PreToolUse','permissionDecision':'deny',
+                'permissionDecisionReason':reason}}))
+        # Silence keeps the normal permission flow; it never approves by itself.
         return
     directory = os.environ.get('CLAUDE_PERFIS_RUN')
     if not directory:
