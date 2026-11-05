@@ -206,8 +206,11 @@ class AgentModelTests(unittest.TestCase):
         visual = (ROOT / 'templates/router-agents/router-visual.md').read_text(encoding='utf-8')
         self.assertNotRegex(visual, r'(?m)^tools: .*\b(Edit|Write)\b')
         coder = (ROOT / 'templates/router-agents/router-coder.md').read_text(encoding='utf-8')
-        for skill in ('tailwind-patterns', 'nextjs-react-expert', 'design-motion-principles', 'impeccable', 'avoid-ai-writing'):
+        for skill in ('tailwind-patterns', 'nextjs-react-expert', 'design-motion-principles', 'impeccable', 'workflow-ui-ux-pro-max', 'avoid-ai-writing'):
             self.assertIn(skill, coder)
+            # Every skill named for the coder must ship in the bundle the router profile receives.
+            self.assertTrue((ROOT / 'bundle/skills' / skill / 'SKILL.md').is_file(), skill)
+        self.assertNotIn('if installed', coder)
 
     def test_router_instructions_keep_mandatory_site_gate(self):
         text = (ROOT / 'templates/ROUTER.md').read_text(encoding='utf-8')

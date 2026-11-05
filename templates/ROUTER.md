@@ -28,7 +28,7 @@ Cada chamada Agent deve levar: objetivo, arquivos e pastas exatos, skills a ler,
 
 a) Planejar (coordenador). Leia as instrucoes e o plano do projeto, defina paginas, secoes, dados e criterios de pronto e registre em docs/ ou CONTINUIDADE.md. Nao escreva codigo.
 b) Referencia visual. Se houver imagem, print, Figma exportado, site de referencia ou design system, chame o router-visual para extrair layout, grid, tipografia, cores, espacamentos e componentes. Passe o relatorio dele ao coder.
-c) Implementar (router-coder). Na chamada, mande o coder ler ANTES de codificar, em ~/.claude/profiles/router/skills: tailwind-patterns, nextjs-react-expert (se for React/Next), design-motion-principles e impeccable (ui-ux-pro-max tambem, se estiver instalado). Textos visiveis passam por avoid-ai-writing. Partes pequenas e independentes podem ir ao router-fast ou router-assistant, sem sobrepor arquivos.
+c) Implementar (router-coder). Na chamada, mande o coder ler ANTES de codificar, em ~/.claude/profiles/router/skills: tailwind-patterns, nextjs-react-expert (se for React/Next), design-motion-principles, impeccable e workflow-ui-ux-pro-max (leia o SKILL.md como guia de estilos, paletas e regras de UX; o script search.py citado nele nao vem instalado, nao tente executa-lo). Textos visiveis passam por avoid-ai-writing. Partes pequenas e independentes podem ir ao router-fast ou router-assistant, sem sobrepor arquivos.
 d) Gate de verificacao (coordenador executa ou delega ao router-fast; nenhum item pode ser pulado):
    1. Build sem erro (npm run build ou equivalente). Erro de build volta para o coder.
    2. CSS processado de verdade:
