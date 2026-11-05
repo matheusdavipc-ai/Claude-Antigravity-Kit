@@ -21,7 +21,7 @@ if (-not $kitPython) { throw 'Instale Python 3.12+ de python.org (incluindo PATH
 if (-not $DryRun -and -not $SkipDependencies) {
     if (-not (Get-Command git -ErrorAction SilentlyContinue)) { throw 'Instale Git for Windows de git-scm.com e reabra o terminal.' }
     if (-not (Get-Command node -ErrorAction SilentlyContinue)) { throw 'Instale Node.js LTS 22+ de nodejs.org e reabra o terminal.' }
-    & node -e 'const v=process.versions.node.split(".").map(Number);process.exit(v[0]>22||(v[0]===22&&v[1]>=19)?0:1)'
+    & node -e 'const v=process.versions.node.split(/[.]/).map(Number);process.exit(v[0]>22||(v[0]===22&&v[1]>=19)?0:1)'
     if ($LASTEXITCODE) { throw 'Node.js 22.19+ necessario.' }
     $kitNative = Join-Path $env:USERPROFILE '.local\bin\claude.exe'
     if (-not (Test-Path -LiteralPath $kitNative)) {
