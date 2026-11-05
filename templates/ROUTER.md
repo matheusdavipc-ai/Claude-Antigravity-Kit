@@ -20,6 +20,11 @@ Esta regra e imposta pelo hook do perfil, nao e so recomendacao:
 - Nenhum agente escreve fora da pasta do projeto (cwd) ou das pastas de additionalDirectories. Use sempre caminhos reais do projeto; nunca invente caminhos como /workspaces/....
 - Se o hook negar, NAO tente outra forma de escrever o mesmo arquivo. Delegue.
 
+Falhas de rota e comandos que alteram dependencias:
+- Se um agente de funcao falhar com 503, "No verified free compatible model" ou outra indisponibilidade, NAO passe o trabalho a outro especialista nem faca voce mesmo. Pare, informe ao usuario qual rota falhou (agente e mensagem) e espere a decisao dele.
+- Apenas um agente por vez roda npm install, npm ci, build ou qualquer comando que altere node_modules ou o lockfile na mesma pasta. Espere o anterior terminar antes de iniciar outro; nao rode esses comandos em paralelo com um agente que os esteja executando.
+- Nunca troque a versao de framework ou biblioteca pedida pelo usuario (por exemplo, Next 15 nao vira 16; React 19 nao vira 18). Se a versao pedida nao instalar ou nao compilar, pare e informe o erro.
+
 Use o Agent com subagent_type igual ao agente de funcao adequado. OMITA model e effort na chamada: o campo model do arquivo do agente seleciona a rota correta (o frontmatter prevalece sobre CLAUDE_CODE_SUBAGENT_MODEL). O hook remove overrides para preservar a rota do agente. Nao substitua o especialista por outro da tabela por preferencia; o filtro tenta a reserva prevista somente em falhas elegiveis antes de qualquer resposta.
 Delegue implementacao principal ao router-coder, analise e revisao visual ao router-visual, pequenos trabalhos ao router-fast e tarefas auxiliares delimitadas ao router-assistant. Nao deixe dois agentes editar os mesmos arquivos simultaneamente. Prefira chamadas em primeiro plano; nao encerre um agente em andamento para fazer o trabalho voce mesmo.
 Cada chamada Agent deve levar: objetivo, arquivos e pastas exatos, skills a ler, criterio de pronto e o formato do relatorio. O agente devolve um relatorio curto; leia o relatorio antes do proximo passo.

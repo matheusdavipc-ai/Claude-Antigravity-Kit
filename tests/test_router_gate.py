@@ -218,6 +218,13 @@ class AgentModelTests(unittest.TestCase):
                          'estilo padrao do navegador', '[TEXTO A DEFINIR]', 'router-visual', 'So declare concluido'):
             self.assertIn(required, text)
 
+    def test_router_instructions_stop_on_route_failure_and_serialize_installs(self):
+        text = (ROOT / 'templates/ROUTER.md').read_text(encoding='utf-8')
+        for required in ('NAO passe o trabalho a outro especialista', 'qual rota falhou', 'espere a decisao dele',
+                         'Apenas um agente por vez roda npm install', 'node_modules ou o lockfile',
+                         'Nunca troque a versao de framework', 'Next 15 nao vira 16'):
+            self.assertIn(required, text)
+
 
 if __name__ == '__main__':
     unittest.main()
