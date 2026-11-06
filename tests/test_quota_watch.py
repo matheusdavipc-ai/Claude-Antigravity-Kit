@@ -123,11 +123,13 @@ class QuotaWatchTests(unittest.TestCase):
         node=shutil.which('node')
         if not node:self.skipTest('Node required')
         package=self.root/'package';(package/'bin/cli').mkdir(parents=True)
-        state={'connections':[{'id':str(i),'provider':'openrouter','name':'main'+str(i),'isActive':True,'priority':1} for i in range(15,0,-1)],'settings':{},'writes':0}
+        models=['openrouter/'+m for m in sorted(core.MODELS)]
+        state={'connections':[{'id':str(i),'provider':'openrouter','name':'main'+str(i),'isActive':True,'priority':1} for i in range(15,0,-1)],'settings':{},'writes':0,
+               'key':{'id':'k1','modelAccessMode':'restricted','allowedModels':models}}
         file=self.root/'state.json';core.atomic_json(file,state)
         (package/'bin/cli/api.mjs').write_text(
-            "import fs from 'node:fs'; const p=process.env.FIXTURE_STATE; export async function apiFetch(path,o){let s=JSON.parse(fs.readFileSync(p));let data;if(o.method==='GET'){data=path.startsWith('/api/providers?')?{connections:s.connections}:s.settings;}else{ s.writes++; if(o.method==='PATCH')Object.assign(s.settings,o.body);else Object.assign(s.connections.find(c=>c.id===path.split('/').pop()),o.body);fs.writeFileSync(p,JSON.stringify(s));data={};}return {ok:true,json:async()=>data};}",encoding='utf-8')
-        request={'url':'http://127.0.0.1:20128','package':str(package),'backup':str(self.root/'backup.json'),'createKey':False}
+            "import fs from 'node:fs'; const p=process.env.FIXTURE_STATE; export async function apiFetch(path,o){let s=JSON.parse(fs.readFileSync(p));let data;if(o.method==='GET'){data=path.startsWith('/api/providers?')?{connections:s.connections}:path.startsWith('/api/keys/')?s.key:s.settings;}else{ s.writes++; if(o.method==='PATCH')Object.assign(s.settings,o.body);else Object.assign(s.connections.find(c=>c.id===path.split('/').pop()),o.body);fs.writeFileSync(p,JSON.stringify(s));data={};}return {ok:true,json:async()=>data};}",encoding='utf-8')
+        request={'url':'http://127.0.0.1:20128','package':str(package),'backup':str(self.root/'backup.json'),'createKey':False,'keyId':'k1','models':models}
         bridge=Path(q.__file__).with_name('omniroute_bridge.mjs')
         env={**os.environ,'FIXTURE_STATE':str(file)}
         for attempt in range(2):

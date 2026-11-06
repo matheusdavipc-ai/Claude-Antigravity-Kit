@@ -35,7 +35,14 @@ def setup():
     backup=KIT/'backups'/('omniroute-pool-'+datetime.datetime.now().strftime('%Y%m%d-%H%M%S-%f'))
     protect_directory(backup)
     secret=ROUTER/'secrets/omniroute.dpapi'
+    old=ROUTER/'upstream.json'
+    prior=json.loads(old.read_text(encoding='utf-8')) if old.exists() else {}
     request={'url':URL,'package':str(package),'models':['openrouter/'+m for m in sorted(MODELS)],'createKey':not secret.exists(),'backup':str(backup/'pool-before.json')}
+    if not request['createKey']:
+        # Same key and secret: only its model permissions are reconciled with the kit list.
+        if not isinstance(prior.get('key_id'),str) or not prior['key_id']:
+            raise RuntimeError('Chave local existente sem identificador registrado; nada foi alterado.')
+        request['keyId']=prior['key_id']
     result=subprocess.run([node,str(Path(__file__).with_name('omniroute_bridge.mjs'))],input=json.dumps(request),text=True,capture_output=True,timeout=60)
     if result.returncode:
         raise RuntimeError('Configuracao do pool falhou; nenhum segredo foi exibido. Confira servidor, conexao main1 e compatibilidade do OmniRoute.')
@@ -43,12 +50,12 @@ def setup():
     if request['createKey']:
         if not isinstance(data.get('secret'),str) or not data['secret']: raise RuntimeError('OmniRoute nao retornou a chave local.')
         save_secret(secret,data.pop('secret'))
-    old=ROUTER/'upstream.json'
     if old.exists(): (backup/'upstream-before.json').write_bytes(old.read_bytes())
-    prior=json.loads(old.read_text(encoding='utf-8')) if old.exists() else {}
     atomic_json(old,{'url':URL,'transport':'omniroute','key_id':data.get('key_id') or prior.get('key_id')})
     atomic_json(backup/'result.json',{k:v for k,v in data.items() if k!='secret'})
     print('OmniRoute conectado: '+', '.join(x['name'] for x in data['connections'])+'; prioridade sequencial, somente modelos gratuitos.')
+    if not request['createKey']:
+        print('Chave local mantida; modelos permitidos '+('atualizados' if data.get('key_updated') else 'ja corretos')+' ('+str(data.get('allowed_models'))+').')
     if len(data['connections'])==1: print('A segunda conta ainda nao existe. Cadastre main2 com prioridade 2 para habilitar a reserva de conta.')
     return data
 
