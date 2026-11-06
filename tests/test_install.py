@@ -132,7 +132,8 @@ class InstallTests(unittest.TestCase):
             # Auto mode's classifier would run on a free model: the router profile leaves auto.
             self.assertEqual(router['permissions']['defaultMode'], 'acceptEdits')
             self.assertEqual(router['permissions']['allow'], ['Bash(make *)'] + install.ROUTER_ALLOW)
-            home_rules = str(home / '.claude/CLAUDE.md').replace('\\', '/')
+            # The installer works on the resolved home (macOS temp folders sit behind /var -> /private/var).
+            home_rules = str(home.resolve() / '.claude/CLAUDE.md').replace('\\', '/')
             self.assertEqual(router['claudeMdExcludes'], ['C:/elsewhere/CLAUDE.md', home_rules])
             hooks = router['hooks']
             self.assertIn(user_hook, hooks['PreToolUse'])
