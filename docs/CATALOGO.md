@@ -180,11 +180,11 @@ A coordenação principal permanece na conversa. Os especialistas recebem tarefa
 
 | Agente e fonte | Função | Principal → reserva | Pedido de exemplo |
 |---|---|---|---|
-| [router-orchestrator](../templates/router-agents/router-orchestrator.md) | Coordenação, planejamento e revisão. A conversa principal já faz a coordenação. | Inkling → Nemotron 3 Ultra | Planeje a tarefa, distribua o trabalho pelas funções do router e revise os resultados. |
-| [router-coder](../templates/router-agents/router-coder.md) | Implementação principal de sites, APIs, sistemas e integrações. | Inkling Small → Laguna S 2.1 | Delegue ao router-coder a implementação da API de pedidos e seus testes pertinentes. |
-| [router-visual](../templates/router-agents/router-visual.md) | Análise de imagens e referências de interface. | Nemotron 3.5 Super VL → Inkling Small | Use router-visual para analisar este print e descrever hierarquia, espaçamentos e diferenças. |
-| [router-fast](../templates/router-agents/router-fast.md) | Trabalhos curtos e bem delimitados. | North Mini Code → Laguna XS 2.1 | Delegue ao router-fast a correção destas mensagens de validação. |
-| [router-assistant](../templates/router-agents/router-assistant.md) | Tarefas auxiliares e apoio à implementação principal. | Laguna XS 2.1 → North Mini Code | Delegue ao router-assistant a análise dos testes existentes e a lista de lacunas. |
+| [router-orchestrator](../templates/router-agents/router-orchestrator.md) | Coordenação, planejamento e revisão. A conversa principal já faz a coordenação. | Nemotron 3.5 Lightning → Nemotron 3 Ultra | Planeje a tarefa, distribua o trabalho pelas funções do router e revise os resultados. |
+| [router-coder](../templates/router-agents/router-coder.md) | Implementação principal de sites, APIs, sistemas e integrações. | Gemma 4 31B → Xing4.0 29B A4B | Delegue ao router-coder a implementação da API de pedidos e seus testes pertinentes. |
+| [router-visual](../templates/router-agents/router-visual.md) | Análise de imagens e referências de interface. | Nemotron 3.5 Super VL → Gemma 4 31B | Use router-visual para analisar este print e descrever hierarquia, espaçamentos e diferenças. |
+| [router-fast](../templates/router-agents/router-fast.md) | Trabalhos curtos e bem delimitados. | North Mini Code → Gemma 4 26B A4B | Delegue ao router-fast a correção destas mensagens de validação. |
+| [router-assistant](../templates/router-agents/router-assistant.md) | Tarefas auxiliares e apoio à implementação principal. | Gemma 4 26B A4B → North Mini Code | Delegue ao router-assistant a análise dos testes existentes e a lista de lacunas. |
 
 Ao delegar pelo Agent no router, o coordenador omite `model` e `effort` da chamada; o frontmatter e a política de contexto escolhem o modelo da função. A equipe permanece com sete modelos distintos e cinco duplas.
 

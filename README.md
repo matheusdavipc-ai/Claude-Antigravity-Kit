@@ -29,11 +29,11 @@ Leia README.md, AGENTS.md, models.json e docs/CATALOGO.md antes de alterar arqui
 Configure claude para a assinatura Anthropic original e clauderouter para OpenRouter, em perfis separados. A instalação global deve funcionar sem depender da pasta clonada. Instale todas as skills, agentes e workflows do bundle; use /workflow-* para evitar conflitos com comandos nativos. Memória pessoal permanece desativada.
 
 Respeite exatamente as funções e duplas de models.json:
-- Orquestrador: Inkling → Nemotron 3 Ultra.
-- Programador principal: Inkling Small → Laguna S 2.1.
-- Especialista visual: Nemotron 3.5 Super VL → Inkling Small.
-- Executor rápido: North Mini Code → Laguna XS 2.1.
-- Programador auxiliar: Laguna XS 2.1 → North Mini Code.
+- Orquestrador: Nemotron 3.5 Lightning → Nemotron 3 Ultra.
+- Programador principal: Gemma 4 31B → Xing4.0 29B A4B.
+- Especialista visual: Nemotron 3.5 Super VL → Gemma 4 31B.
+- Executor rápido: North Mini Code → Gemma 4 26B A4B.
+- Programador auxiliar: Gemma 4 26B A4B → North Mini Code.
 São sete modelos distintos em dez posições. Preserve os nomes originais e descrições de função em /model, os limites de contexto por modelo e as regras de compactação. Não acrescente modelos pagos ou terceiros. Revalide metadados e informe restrições, expiração ou indisponibilidade; não invente substitutos.
 
 Mantenha as políticas de orquestração separadas: Haiku (leitura), Sonnet, Opus e esforço no claude original, com Fable só sob pedido; os cinco agentes próprios e as duplas acima no router. Preserve a troca automática por esgotamento reconhecido e o preparo preventivo em 95% da assinatura Anthropic, somente após checkpoint e em estado ocioso verificado sem processos auxiliares; o retorno é manual. Entre contas OpenRouter, mantenha a mesma sessão sem checkpoint em 95%.
@@ -66,11 +66,11 @@ Leia README.md, AGENTS.md, models.json e docs/CATALOGO.md antes de alterar arqui
 Configure claude para a assinatura Anthropic original e clauderouter para OpenRouter, em perfis separados. A instalação global deve funcionar sem depender da pasta clonada. Instale todas as skills, agentes e workflows do bundle; use /workflow-* para evitar conflitos com comandos nativos. Memória pessoal permanece desativada.
 
 Respeite exatamente as funções e duplas de models.json:
-- Orquestrador: Inkling → Nemotron 3 Ultra.
-- Programador principal: Inkling Small → Laguna S 2.1.
-- Especialista visual: Nemotron 3.5 Super VL → Inkling Small.
-- Executor rápido: North Mini Code → Laguna XS 2.1.
-- Programador auxiliar: Laguna XS 2.1 → North Mini Code.
+- Orquestrador: Nemotron 3.5 Lightning → Nemotron 3 Ultra.
+- Programador principal: Gemma 4 31B → Xing4.0 29B A4B.
+- Especialista visual: Nemotron 3.5 Super VL → Gemma 4 31B.
+- Executor rápido: North Mini Code → Gemma 4 26B A4B.
+- Programador auxiliar: Gemma 4 26B A4B → North Mini Code.
 São sete modelos distintos em dez posições. Preserve os nomes originais e descrições de função em /model, os limites de contexto por modelo e as regras de compactação. Não acrescente modelos pagos ou terceiros. Revalide metadados e informe restrições, expiração ou indisponibilidade; não invente substitutos.
 
 Mantenha as políticas de orquestração separadas: Haiku (leitura), Sonnet, Opus e esforço no claude original, com Fable só sob pedido; os cinco agentes próprios e as duplas acima no router. Preserve a troca automática por esgotamento reconhecido e o preparo preventivo em 95% da assinatura Anthropic, somente após checkpoint e em estado ocioso verificado sem processos auxiliares; o retorno é manual. Entre contas OpenRouter, mantenha a mesma sessão sem checkpoint em 95%.
@@ -97,19 +97,19 @@ Prefere instalar pelo terminal? Veja [Windows](#instalar-no-windows) ou [macOS](
 
 | Função | Principal | Reserva |
 |---|---|---|
-| Orquestrador | Inkling | Nemotron 3 Ultra |
-| Programador principal | Inkling Small | Laguna S 2.1 |
-| Especialista visual | Nemotron 3.5 Super VL | Inkling Small |
-| Executor rápido | North Mini Code | Laguna XS 2.1 |
-| Programador auxiliar | Laguna XS 2.1 | North Mini Code |
+| Orquestrador | Nemotron 3.5 Lightning | Nemotron 3 Ultra |
+| Programador principal | Gemma 4 31B | Xing4.0 29B A4B |
+| Especialista visual | Nemotron 3.5 Super VL | Gemma 4 31B |
+| Executor rápido | North Mini Code | Gemma 4 26B A4B |
+| Programador auxiliar | Gemma 4 26B A4B | North Mini Code |
 
 São **10 posições, 5 principais e 5 reservas, com 7 modelos distintos**. O seletor `/model` mostra os nomes originais dos sete modelos. `models.json` registra os IDs e as duplas. `router-*` são nomes internos de funções/agentes, não nomes de modelos.
 
-Escolher um modelo principal usa sua reserva por função em falhas elegíveis antes de começar a resposta. Escolher Nemotron Ultra ou Laguna S diretamente mantém esse modelo, sem inventar uma terceira alternativa. North Mini Code, Laguna XS e Inkling Small também aparecem como reservas de outras funções: a função do agente determina essa relação.
+Escolher um modelo principal usa sua reserva por função em falhas elegíveis antes de começar a resposta. Escolher Nemotron 3 Ultra ou Xing4.0 29B A4B diretamente mantém esse modelo, sem inventar uma terceira alternativa. North Mini Code, Gemma 4 26B A4B e Gemma 4 31B também aparecem como reservas de outras funções: a função do agente determina essa relação.
 
 O filtro revalida preços, disponibilidade, suporte a ferramentas, imagens e expiração. Só aceita os sete IDs `:free`, bloqueia recursos pagos e nunca manda imagem a modelo sem suporte visual. Zero preço não significa capacidade ou cota ilimitada.
 
-**Disponibilidade conhecida em 18/10/2026:** Inkling e Inkling Small recusaram a conta/rota testada com a restrição “only available on agentic harnesses”; Nemotron Ultra foi a reserva usada. Laguna S também apresentou limite temporário. Ambos Laguna constavam com expiração em 31/10/2026. O instalador não contorna restrições nem substitui os modelos por conta própria. Consulte o catálogo ao instalar; uma dupla pode ficar indisponível.
+**Troca de modelos em 05/11/2026:** as variantes gratuitas de Inkling, Inkling Small, Laguna S 2.1 e Laguna XS 2.1 saíram do catálogo do OpenRouter (Inkling e Inkling Small seguem só como modelos pagos; as Laguna não aparecem mais). Foram substituídas, nas mesmas posições, por Nemotron 3.5 Lightning, Gemma 4 31B, Xing4.0 29B A4B e Gemma 4 26B A4B. Os critérios foram: `:free` com preço zero, ferramentas, contexto de pelo menos 256k, resposta máxima publicada e imagem nas duas posições visuais. O coordenador continua com rota de 1M (Nemotron 3.5 Lightning e Nemotron 3 Ultra, ambos servidos pela Nvidia); nas outras duplas, principal e reserva ficam em provedores diferentes. O instalador não contorna restrições nem substitui os modelos por conta própria. Consulte o catálogo ao instalar; uma dupla pode ficar indisponível.
 
 ## Instalar no Windows
 
@@ -161,7 +161,7 @@ Ao adicionar main2, mantenha a prioridade 2 e execute novamente `omniroute_pool.
 
 ### O que o painel mostra
 
-A topologia representa conexões de **provedores**, não uma lista de terminais Claude abertos. O perfil Inkling aparece como tráfego **OpenRouter** quando faz uma chamada pelo OmniRoute. O `claude` original continua direto na Anthropic e não precisa da conexão Claude OAuth do OmniRoute. Um token dessa conexão marcado como expirado requer reautenticação legítima no próprio painel; ativar o botão não renova o token e não comprova esgotamento de cota.
+A topologia representa conexões de **provedores**, não uma lista de terminais Claude abertos. O perfil router aparece como tráfego **OpenRouter** quando faz uma chamada pelo OmniRoute. O `claude` original continua direto na Anthropic e não precisa da conexão Claude OAuth do OmniRoute. Um token dessa conexão marcado como expirado requer reautenticação legítima no próprio painel; ativar o botão não renova o token e não comprova esgotamento de cota.
 
 ## Abrir o OmniRoute
 
@@ -284,21 +284,21 @@ Os prompts acima também estão em [Prompts de instalação](docs/PROMPT-INSTALA
 
 ## Contexto e compactacao por modelo
 
-O catalogo oficial consultado em 18/10/2026 esta registrado em models.json, incluindo contexto e resposta maxima por modelo. Ao abrir o router, o lancador recalcula a configuracao com metadados atuais. O gateway revalida metadados periodicamente e limita a resposta ao valor compativel com os candidatos disponiveis. Se uma janela diminuir durante a sessao, bloqueia a chamada e pede reinicializacao para recalcular a compactacao, sem mandar contexto para uma reserva menor.
+O catalogo oficial consultado em 05/11/2026 esta registrado em models.json, incluindo contexto e resposta maxima por modelo. Ao abrir o router, o lancador recalcula a configuracao com metadados atuais. O gateway revalida metadados periodicamente e limita a resposta ao valor compativel com os candidatos disponiveis. Se uma janela diminuir durante a sessao, bloqueia a chamada e pede reinicializacao para recalcular a compactacao, sem mandar contexto para uma reserva menor.
 
 | Modelo | Contexto publicado | Compactacao configurada |
 |---|---:|---:|
-| Inkling | 1048576 | 918080 |
-| Inkling Small | 1048576 | 212992 |
-| Nemotron 3.5 Super VL | 1000000 | 918080 |
+| Nemotron 3.5 Lightning | 1000000 | 918080 |
+| Gemma 4 31B | 262144 | 206848 |
+| Nemotron 3.5 Super VL | 1000000 | 212992 |
 | North Mini Code | 256000 | 206848 |
-| Laguna XS 2.1 | 262144 | 206848 |
+| Gemma 4 26B A4B | 262144 | 206848 |
 | Nemotron 3 Ultra | 1000000 | 918080 |
-| Laguna S 2.1 | 262144 | 206848 |
+| Xing4.0 29B A4B | 262144 | 174080 |
 
-A compactacao reserva espaco para a resposta e uma margem adicional de 16384 tokens. Inkling Small compacta antes para preservar a reserva Laguna S, cuja janela e menor. O mesmo criterio considera North Mini Code na dupla de codigo auxiliar. Imagens e diferentes tokenizadores podem causar diferencas de contagem; os limites do provedor continuam soberanos.
+A compactacao reserva espaco para a resposta e uma margem adicional de 16384 tokens. Nemotron 3.5 Super VL compacta antes para preservar a reserva Gemma 4 31B, cuja janela e menor. O mesmo criterio considera North Mini Code na dupla de codigo auxiliar. Imagens e diferentes tokenizadores podem causar diferencas de contagem; os limites do provedor continuam soberanos.
 
-Limite do Claude Code: modelSettings.autoCompactWindow permite compactacao individual, mas nao existe um campo oficial arbitrario de janela por modelo para esses IDs externos. Por isso modelos com pelo menos 1000000 usam o sufixo oficial [1m] (removido antes da chamada OpenRouter). Os menores usam a janela nativa conservadora de 256000, o menor tamanho desse grupo; Laguna S/XS deixam de aproveitar 6144 tokens da capacidade publicada. Nao foram falsificadas identidades Claude por behavesAs ou modelOverrides, nem desativada a compactacao. O antigo teto global de 200000 foi removido.
+Limite do Claude Code: modelSettings.autoCompactWindow permite compactacao individual, mas nao existe um campo oficial arbitrario de janela por modelo para esses IDs externos. Por isso modelos com pelo menos 1000000 usam o sufixo oficial [1m] (removido antes da chamada OpenRouter). Os menores usam a janela nativa conservadora de 256000, o menor tamanho desse grupo; Xing4.0 29B A4B e os dois Gemma 4 deixam de aproveitar 6144 tokens da capacidade publicada. Nao foram falsificadas identidades Claude por behavesAs ou modelOverrides, nem desativada a compactacao. O antigo teto global de 200000 foi removido.
 
 A configuracao e isolada do perfil Anthropic original. `clauderouter --listar-modelos` mostra os limites registrados e as reservas sem gerar resposta. Reabra clauderouter para carregar a configuracao nova. A CI e os testes locais usam provedores simulados; a verificacao visual interativa permanece dependente de autorizacao de confianca na pasta e nao foi contornada.
 

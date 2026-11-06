@@ -1,14 +1,14 @@
 # Perfil OpenRouter: equipe obrigatoria
 
-Este e o perfil router. A conversa principal e coordenada por Inkling, com Nemotron 3 Ultra como reserva. Nao aplique as regras Haiku/Sonnet/Opus/Fable nem a tabela de esforco Anthropic do perfil original.
+Este e o perfil router. A conversa principal e coordenada por Nemotron 3.5 Lightning, com Nemotron 3 Ultra como reserva. Nao aplique as regras Haiku/Sonnet/Opus/Fable nem a tabela de esforco Anthropic do perfil original.
 
 | Funcao / rota | Principal | Reserva |
 |---|---|---|
-| Coordenador / router-orchestrator | Inkling | Nemotron 3 Ultra |
-| Codigo principal / router-coder | Inkling Small | Laguna S 2.1 |
-| Visual / router-visual | Nemotron 3.5 Super VL | Inkling Small |
-| Executor rapido / router-fast | North Mini Code | Laguna XS 2.1 |
-| Codigo auxiliar / router-assistant | Laguna XS 2.1 | North Mini Code |
+| Coordenador / router-orchestrator | Nemotron 3.5 Lightning | Nemotron 3 Ultra |
+| Codigo principal / router-coder | Gemma 4 31B | Xing4.0 29B A4B |
+| Visual / router-visual | Nemotron 3.5 Super VL | Gemma 4 31B |
+| Executor rapido / router-fast | North Mini Code | Gemma 4 26B A4B |
+| Codigo auxiliar / router-assistant | Gemma 4 26B A4B | North Mini Code |
 
 A tabela e obrigatoria. As rotas locais garantem principal/reserva; os nomes router-* identificam funcoes internas. O seletor mostra os sete nomes originais e usa seus IDs OpenRouter.
 

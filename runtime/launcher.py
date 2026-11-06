@@ -202,7 +202,7 @@ def run_router(args, run, continuity=None):
     if continuity:
         native_args += ['Leia '+str(continuity)+' e continue a tarefa interrompida. Verifique o estado atual antes de repetir qualquer operacao.']
     try:
-        print('[clauderouter] Inkling coordena; OmniRoute alterna contas OpenRouter; reservas por funcao; somente rotas gratuitas.',flush=True)
+        print('[clauderouter] Nemotron 3.5 Lightning coordena; OmniRoute alterna contas OpenRouter; reservas por funcao; somente rotas gratuitas.',flush=True)
         child = start_native(native_args,env)
         result = wait_native(child)
     finally:

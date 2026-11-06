@@ -81,3 +81,30 @@ Uma sessão real no perfil router mostrou o coordenador escrevendo componentes e
 Antes, quando a chave local já existia, `omniroute_pool.py` não criava chave nova e também não atualizava os modelos permitidos dela. Se a lista do kit mudasse, a chave continuaria restrita aos modelos antigos. Agora o bridge lê a chave registrada em `upstream.json` pela API oficial (`GET /api/keys/{id}`) e grava as permissões anteriores no `pool-before.json` do backup, sem o valor mascarado da chave. Se a lista diferir da lista atual do kit, aplica `PATCH /api/keys/{id}` com `modelAccessMode: restricted`. A chave e o segredo continuam os mesmos.
 
 Todas as leituras acontecem antes da primeira escrita, e a chave é a primeira escrita. Por isso, um servidor parado ou uma recusa da API não alteram nada. Se um passo posterior falhar, as permissões anteriores da chave são restauradas. Uma segunda execução não faz nenhuma escrita. `tests/test_omniroute_key.py` cobre, com um cliente OmniRoute simulado, os casos de lista antiga, lista já correta, recusa da atualização, recusa da leitura, servidor parado, falha posterior com restauração e identificador ausente.
+
+## Troca de modelos indisponíveis (05/11/2026)
+
+O teste real de delegação recebeu do filtro `503 No verified free compatible model for this role` para o router-coder. Pelo catálogo público (`/api/v1/models`: 454 modelos, `total_count` 454, `links.next` nulo, ou seja, sem paginação perdida) e pelos endpoints por modelo:
+
+- `thinkingmachines/inkling:free` e `thinkingmachines/inkling-small:free` não existem mais. Só restam `thinkingmachines/inkling` e `thinkingmachines/inkling-small`, com preço diferente de zero (um provedor pago). Os endpoints das variantes `:free` vêm vazios.
+- `poolside/laguna-s-2.1:free` e `poolside/laguna-xs-2.1:free` sumiram do catálogo, também com endpoints vazios.
+
+A recusa foi correta: o filtro exige o sufixo `:free`, preço zero em todas as dimensões, `tools` e, para imagem, entrada visual. O filtro não tinha defeito e não foi alterado.
+
+Os quatro modelos foram substituídos nas mesmas posições. Os três que passavam (Nemotron 3 Ultra, Nemotron 3.5 Super VL e North Mini Code) foram mantidos. Critérios aplicados: `:free` com preço zero, `tools`, contexto de pelo menos 256k, resposta máxima publicada e imagem nas duas posições do router-visual. Principal e reserva são modelos diferentes. O coordenador mantém uma rota de 1M, garantida pelo teste de contexto (compactação acima de 900000).
+
+| Antigo | Novo | Contexto | Resposta máx. | Imagem | Provedor do endpoint gratuito |
+|---|---|---:|---:|---|---|
+| Inkling | nvidia/nemotron-3.5-lightning:free (Nemotron 3.5 Lightning) | 1000000 | 65536 | não | Nvidia |
+| Inkling Small | google/gemma-4-31b-it:free (Gemma 4 31B) | 262144 | 32768 | sim | Google AI Studio |
+| Laguna S 2.1 | xingchen-agi/xing4.0-29b-a4b:free (Xing4.0 29B A4B) | 262144 | 235929 | não | Phala |
+| Laguna XS 2.1 | google/gemma-4-26b-a4b-it:free (Gemma 4 26B A4B) | 262144 | 32768 | sim | Google AI Studio |
+
+Duplas resultantes:
+- coordenador: Nemotron 3.5 Lightning → Nemotron 3 Ultra, os dois na Nvidia e com 1M (compactação 918080);
+- coder: Gemma 4 31B (Google) → Xing4.0 29B A4B (Phala);
+- visual: Nemotron 3.5 Super VL (Nvidia) → Gemma 4 31B (Google), ambos com imagem;
+- fast: North Mini Code (Cohere) → Gemma 4 26B A4B (Google);
+- assistant: Gemma 4 26B A4B (Google) → North Mini Code (Cohere).
+
+Pôr o Xing4.0 como coordenador quebraria a janela de 1M, porque ele publica 262144. Por isso a dupla do coordenador ficou com um único provedor. Nenhuma geração foi feita nesta validação; a qualidade dos modelos novos depende de testes reais.

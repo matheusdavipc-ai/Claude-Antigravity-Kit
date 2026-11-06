@@ -25,11 +25,11 @@ Leia README.md, AGENTS.md, models.json e docs/CATALOGO.md antes de alterar arqui
 Configure claude para a assinatura Anthropic original e clauderouter para OpenRouter, em perfis separados. A instalação global deve funcionar sem depender da pasta clonada. Instale todas as skills, agentes e workflows do bundle; use /workflow-* para evitar conflitos com comandos nativos. Memória pessoal permanece desativada.
 
 Respeite exatamente as funções e duplas de models.json:
-- Orquestrador: Inkling → Nemotron 3 Ultra.
-- Programador principal: Inkling Small → Laguna S 2.1.
-- Especialista visual: Nemotron 3.5 Super VL → Inkling Small.
-- Executor rápido: North Mini Code → Laguna XS 2.1.
-- Programador auxiliar: Laguna XS 2.1 → North Mini Code.
+- Orquestrador: Nemotron 3.5 Lightning → Nemotron 3 Ultra.
+- Programador principal: Gemma 4 31B → Xing4.0 29B A4B.
+- Especialista visual: Nemotron 3.5 Super VL → Gemma 4 31B.
+- Executor rápido: North Mini Code → Gemma 4 26B A4B.
+- Programador auxiliar: Gemma 4 26B A4B → North Mini Code.
 São sete modelos distintos em dez posições. Preserve os nomes originais e descrições de função em /model, os limites de contexto por modelo e as regras de compactação. Não acrescente modelos pagos ou terceiros. Revalide metadados e informe restrições, expiração ou indisponibilidade; não invente substitutos.
 
 Mantenha as políticas de orquestração separadas: Haiku (leitura), Sonnet, Opus e esforço no claude original, com Fable só sob pedido; os cinco agentes próprios e as duplas acima no router. Preserve a troca automática por esgotamento reconhecido e o preparo preventivo em 95% da assinatura Anthropic, somente após checkpoint e em estado ocioso verificado sem processos auxiliares; o retorno é manual. Entre contas OpenRouter, mantenha a mesma sessão sem checkpoint em 95%.
@@ -62,11 +62,11 @@ Leia README.md, AGENTS.md, models.json e docs/CATALOGO.md antes de alterar arqui
 Configure claude para a assinatura Anthropic original e clauderouter para OpenRouter, em perfis separados. A instalação global deve funcionar sem depender da pasta clonada. Instale todas as skills, agentes e workflows do bundle; use /workflow-* para evitar conflitos com comandos nativos. Memória pessoal permanece desativada.
 
 Respeite exatamente as funções e duplas de models.json:
-- Orquestrador: Inkling → Nemotron 3 Ultra.
-- Programador principal: Inkling Small → Laguna S 2.1.
-- Especialista visual: Nemotron 3.5 Super VL → Inkling Small.
-- Executor rápido: North Mini Code → Laguna XS 2.1.
-- Programador auxiliar: Laguna XS 2.1 → North Mini Code.
+- Orquestrador: Nemotron 3.5 Lightning → Nemotron 3 Ultra.
+- Programador principal: Gemma 4 31B → Xing4.0 29B A4B.
+- Especialista visual: Nemotron 3.5 Super VL → Gemma 4 31B.
+- Executor rápido: North Mini Code → Gemma 4 26B A4B.
+- Programador auxiliar: Gemma 4 26B A4B → North Mini Code.
 São sete modelos distintos em dez posições. Preserve os nomes originais e descrições de função em /model, os limites de contexto por modelo e as regras de compactação. Não acrescente modelos pagos ou terceiros. Revalide metadados e informe restrições, expiração ou indisponibilidade; não invente substitutos.
 
 Mantenha as políticas de orquestração separadas: Haiku (leitura), Sonnet, Opus e esforço no claude original, com Fable só sob pedido; os cinco agentes próprios e as duplas acima no router. Preserve a troca automática por esgotamento reconhecido e o preparo preventivo em 95% da assinatura Anthropic, somente após checkpoint e em estado ocioso verificado sem processos auxiliares; o retorno é manual. Entre contas OpenRouter, mantenha a mesma sessão sem checkpoint em 95%.

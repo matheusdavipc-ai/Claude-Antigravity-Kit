@@ -36,7 +36,7 @@ class InstallTests(unittest.TestCase):
             home = Path(temp)
             original = home / '.claude/settings.json'
             original.parent.mkdir()
-            original.write_text(json.dumps({'theme': 'light', 'model': 'fable', 'availableModels': ['sonnet', 'opus', 'claude-sonnet-5', 'thinkingmachines/inkling:free'], 'env': {'MY_SETTING': 'keep-me', 'ANTHROPIC_DEFAULT_HAIKU_MODEL': 'claude-sonnet-5-5', 'ANTHROPIC_DEFAULT_FABLE_MODEL': 'claude-opus-5-5', 'ANTHROPIC_DEFAULT_FABLE_MODEL_NAME':'Legacy Opus'}, 'permissions': {'additionalDirectories': ['example-directory']}}))
+            original.write_text(json.dumps({'theme': 'light', 'model': 'fable', 'availableModels': ['sonnet', 'opus', 'claude-sonnet-5', 'nvidia/nemotron-3.5-lightning:free'], 'env': {'MY_SETTING': 'keep-me', 'ANTHROPIC_DEFAULT_HAIKU_MODEL': 'claude-sonnet-5-5', 'ANTHROPIC_DEFAULT_FABLE_MODEL': 'claude-opus-5-5', 'ANTHROPIC_DEFAULT_FABLE_MODEL_NAME':'Legacy Opus'}, 'permissions': {'additionalDirectories': ['example-directory']}}))
             unrelated = home / '.gemini/config/skills/my-personal-skill/SKILL.md'
             unrelated.parent.mkdir(parents=True)
             unrelated.write_text('unrelated custom skill')
@@ -59,7 +59,7 @@ class InstallTests(unittest.TestCase):
             for model in ('opus', 'sonnet', 'haiku', 'fable', 'claude-haiku-5-5', 'claude-fable-5-1'):
                 self.assertIn(model, installed['availableModels'])
             self.assertIn('claude-sonnet-5', installed['availableModels'])
-            self.assertNotIn('thinkingmachines/inkling:free', installed['availableModels'])
+            self.assertNotIn('nvidia/nemotron-3.5-lightning:free', installed['availableModels'])
             self.assertEqual(installed['model'], 'fable')
             self.assertNotIn('ANTHROPIC_BASE_URL', installed['env'])
             self.assertEqual(installed['permissions']['additionalDirectories'], ['example-directory'])
@@ -105,7 +105,7 @@ class InstallTests(unittest.TestCase):
             native.parent.mkdir(parents=True)
             native.write_text('test fixture only')
             # Absent model -> Opus; a router ID leaked into the original is reset; a user's own Haiku pin is kept.
-            for before, expected in ((None, 'opus'), ('thinkingmachines/inkling:free[1m]', 'opus'), ('claude-opus-5-5[1m]', 'claude-opus-5-5[1m]'), ('sonnet', 'sonnet')):
+            for before, expected in ((None, 'opus'), ('nvidia/nemotron-3.5-lightning:free', 'opus'), ('claude-opus-5-5[1m]', 'claude-opus-5-5[1m]'), ('sonnet', 'sonnet')):
                 data = {'env': {'ANTHROPIC_DEFAULT_HAIKU_MODEL': 'claude-haiku-5-5'}}
                 if before:
                     data['model'] = before

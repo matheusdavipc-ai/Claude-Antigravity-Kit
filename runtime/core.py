@@ -21,17 +21,17 @@ if (KIT / 'config.json').is_file():
     EXE = Path(json.loads((KIT / 'config.json').read_text(encoding='utf-8'))['native_executable'])
 ROUTER = HOME / '.claude/profiles/router'
 ROLES = {
-    'router-orchestrator': ('thinkingmachines/inkling:free', 'nvidia/nemotron-3-ultra-550b-a55b:free'),
-    'router-coder': ('thinkingmachines/inkling-small:free', 'poolside/laguna-s-2.1:free'),
-    'router-visual': ('nvidia/nemotron-3.5-super-vl:free', 'thinkingmachines/inkling-small:free'),
-    'router-fast': ('cohere/north-mini-code:free', 'poolside/laguna-xs-2.1:free'),
-    'router-assistant': ('poolside/laguna-xs-2.1:free', 'cohere/north-mini-code:free'),
+    'router-orchestrator': ('nvidia/nemotron-3.5-lightning:free', 'nvidia/nemotron-3-ultra-550b-a55b:free'),
+    'router-coder': ('google/gemma-4-31b-it:free', 'xingchen-agi/xing4.0-29b-a4b:free'),
+    'router-visual': ('nvidia/nemotron-3.5-super-vl:free', 'google/gemma-4-31b-it:free'),
+    'router-fast': ('cohere/north-mini-code:free', 'google/gemma-4-26b-a4b-it:free'),
+    'router-assistant': ('google/gemma-4-26b-a4b-it:free', 'cohere/north-mini-code:free'),
 }
 MODELS = set(m for pair in ROLES.values() for m in pair)
 
-MODEL_NAMES = {'thinkingmachines/inkling:free': 'Inkling', 'thinkingmachines/inkling-small:free': 'Inkling Small', 'nvidia/nemotron-3.5-super-vl:free': 'Nemotron 3.5 Super VL', 'cohere/north-mini-code:free': 'North Mini Code', 'poolside/laguna-xs-2.1:free': 'Laguna XS 2.1', 'nvidia/nemotron-3-ultra-550b-a55b:free': 'Nemotron 3 Ultra', 'poolside/laguna-s-2.1:free': 'Laguna S 2.1'}
+MODEL_NAMES = {'nvidia/nemotron-3.5-lightning:free': 'Nemotron 3.5 Lightning', 'google/gemma-4-31b-it:free': 'Gemma 4 31B', 'nvidia/nemotron-3.5-super-vl:free': 'Nemotron 3.5 Super VL', 'cohere/north-mini-code:free': 'North Mini Code', 'google/gemma-4-26b-a4b-it:free': 'Gemma 4 26B A4B', 'nvidia/nemotron-3-ultra-550b-a55b:free': 'Nemotron 3 Ultra', 'xingchen-agi/xing4.0-29b-a4b:free': 'Xing4.0 29B A4B'}
 PRIMARY_ROLES = {pair[0]: role for role, pair in ROLES.items()}
-MODEL_DESCRIPTIONS = {'thinkingmachines/inkling:free': 'Orquestrador Principal', 'thinkingmachines/inkling-small:free': 'Programador Principal; Especialista Visual Reserva', 'nvidia/nemotron-3.5-super-vl:free': 'Especialista Visual Principal', 'cohere/north-mini-code:free': 'Executor Rápido Principal; Programador Auxiliar Reserva', 'poolside/laguna-xs-2.1:free': 'Programador Auxiliar Principal; Executor Rápido Reserva', 'nvidia/nemotron-3-ultra-550b-a55b:free': 'Orquestrador Reserva', 'poolside/laguna-s-2.1:free': 'Programador Principal Reserva'}
+MODEL_DESCRIPTIONS = {'nvidia/nemotron-3.5-lightning:free': 'Orquestrador Principal', 'google/gemma-4-31b-it:free': 'Programador Principal; Especialista Visual Reserva', 'nvidia/nemotron-3.5-super-vl:free': 'Especialista Visual Principal', 'cohere/north-mini-code:free': 'Executor Rápido Principal; Programador Auxiliar Reserva', 'google/gemma-4-26b-a4b-it:free': 'Programador Auxiliar Principal; Executor Rápido Reserva', 'nvidia/nemotron-3-ultra-550b-a55b:free': 'Orquestrador Reserva', 'xingchen-agi/xing4.0-29b-a4b:free': 'Programador Principal Reserva'}
 PICKER = {'replaceBuiltInOptions': True, 'options': [
     {'model': model, 'label': name, 'description': MODEL_DESCRIPTIONS[model]}
     for model, name in MODEL_NAMES.items()
