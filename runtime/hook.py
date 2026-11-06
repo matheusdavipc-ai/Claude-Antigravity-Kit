@@ -12,11 +12,35 @@ def main():
     event = json.loads(sys.stdin.buffer.read().decode('utf-8-sig'))
     profile = os.environ.get('CLAUDE_PERFIS_PROFILE')
     name = event.get('hook_event_name')
+    run = os.environ.get('CLAUDE_PERFIS_RUN')
+    if profile == 'router' and name in ('SubagentStart','SubagentStop','PostToolUseFailure'):
+        # Bookkeeping only. Never exit 2 here: on SubagentStop that would keep the agent running.
+        try:
+            if run:
+                import agent_guard
+                if name == 'SubagentStart':
+                    agent_guard.started(run, event)
+                elif name == 'SubagentStop':
+                    agent_guard.finished(run, event)
+                elif event.get('tool_name') == 'Agent' and event.get('tool_use_id'):
+                    agent_guard.failed(run, event['tool_use_id'])
+        except Exception:
+            pass
+        return
     if profile == 'router' and name == 'PreToolUse' and event.get('tool_name') == 'Agent':
         # Pin named agents; model overrides cannot redirect the requested role.
         args = event.get('tool_input',{})
         role = args.get('subagent_type')
         if role in ROLES:
+            # A second agent on the same free models would share one provider limit.
+            reason = None
+            if run:
+                import agent_guard
+                reason = agent_guard.claim(run, role, event.get('tool_use_id'))
+            if reason:
+                print(json.dumps({'hookSpecificOutput':{'hookEventName':'PreToolUse','permissionDecision':'deny',
+                    'permissionDecisionReason':reason}}))
+                return
             # Agent's per-call schema only accepts Anthropic family aliases in this CLI.
             # Omit it so the custom agent's model frontmatter selects the role route.
             args.pop('model',None)
@@ -24,7 +48,8 @@ def main():
             print(json.dumps({'hookSpecificOutput':{'hookEventName':'PreToolUse','permissionDecision':'allow','updatedInput':args}}))
         else:
             print(json.dumps({'hookSpecificOutput':{'hookEventName':'PreToolUse','permissionDecision':'deny',
-                'permissionDecisionReason':'Use um dos agentes router-coder, router-visual, router-fast ou router-assistant.'}}))
+                'permissionDecisionReason':'Use Agent(subagent_type="router-coder", description="...", prompt="...") '
+                'ou router-visual, router-fast, router-assistant, sem model e sem effort.'}}))
         return
     if profile == 'router' and name == 'PreToolUse':
         # Coordinator delegates code; every agent stays inside the project folders.

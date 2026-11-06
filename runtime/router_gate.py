@@ -120,12 +120,34 @@ def coordinator_may_write(path, event):
     return False
 
 
+def skill_name(args):
+    name = str(args.get('skill') or args.get('name') or args.get('command') or '').strip().lstrip('/')
+    return name.split()[0].rsplit(':', 1)[-1].casefold() if name else ''
+
+
+def shared_instructions(cwd):
+    """The kit's shared AGENTS.md (original profile rules), wherever a junction exposes it."""
+    home = os.environ.get('CLAUDE_KIT_HOME') or os.path.expanduser('~')
+    places = [Path(home) / '.gemini/config/skills/AGENTS.md', Path(home) / '.claude/skills/AGENTS.md',
+              Path(home) / '.claude/profiles/router/skills/AGENTS.md']
+    if os.environ.get('CLAUDE_CONFIG_DIR'):
+        places.append(Path(os.environ['CLAUDE_CONFIG_DIR']) / 'skills/AGENTS.md')
+    return {native_path(place, cwd) for place in places}
+
+
 def check(event):
     """Return a denial reason for a router PreToolUse event, or None to continue normally."""
     tool = event.get('tool_name')
     args = event.get('tool_input') or {}
     subagent = bool(event.get('agent_id'))
     cwd = event.get('cwd') or os.getcwd()
+    if tool == 'Skill' and skill_name(args).startswith('router-'):
+        role = skill_name(args)
+        return (role + ' e um agente, nao uma skill. Chame Agent(subagent_type="' + role + '", description="...", prompt="...") '
+                'sem model e sem effort.')
+    if tool == 'Read' and args.get('file_path') and native_path(args['file_path'], cwd) in shared_instructions(cwd):
+        return ('O perfil router nao usa o AGENTS.md compartilhado do kit: ele traz a politica de modelos do perfil original. '
+                'Siga o CLAUDE.md do perfil router e as instrucoes do proprio projeto.')
     if tool in EDIT_TOOLS:
         raw = args.get(EDIT_TOOLS[tool]) or ''
         if not raw:

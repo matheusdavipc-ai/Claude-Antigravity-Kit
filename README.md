@@ -28,15 +28,15 @@ Leia README.md, AGENTS.md, models.json e docs/CATALOGO.md antes de alterar arqui
 
 Configure claude para a assinatura Anthropic original e clauderouter para OpenRouter, em perfis separados. A instalação global deve funcionar sem depender da pasta clonada. Instale todas as skills, agentes e workflows do bundle; use /workflow-* para evitar conflitos com comandos nativos. Memória pessoal permanece desativada.
 
-Respeite exatamente as funções e duplas de models.json:
+Respeite exatamente as funções e cadeias de models.json:
 - Orquestrador: Nemotron 3.5 Lightning → Nemotron 3 Ultra.
-- Programador principal: Gemma 4 31B → Xing4.0 29B A4B.
+- Programador principal: Gemma 4 31B → North Mini Code → Nemotron 3.5 Lightning → Xing4.0 29B A4B.
 - Especialista visual: Nemotron 3.5 Super VL → Gemma 4 31B.
 - Executor rápido: North Mini Code → Gemma 4 26B A4B.
 - Programador auxiliar: Gemma 4 26B A4B → North Mini Code.
-São sete modelos distintos em dez posições. Preserve os nomes originais e descrições de função em /model, os limites de contexto por modelo e as regras de compactação. Não acrescente modelos pagos ou terceiros. Revalide metadados e informe restrições, expiração ou indisponibilidade; não invente substitutos.
+São sete modelos distintos em doze posições. Preserve os nomes originais e descrições de função em /model, os limites de contexto por modelo e as regras de compactação. Não acrescente modelos pagos ou terceiros. Revalide metadados e informe restrições, expiração ou indisponibilidade; não invente substitutos.
 
-Mantenha as políticas de orquestração separadas: Haiku (leitura), Sonnet, Opus e esforço no claude original, com Fable só sob pedido; os cinco agentes próprios e as duplas acima no router. Preserve a troca automática por esgotamento reconhecido e o preparo preventivo em 95% da assinatura Anthropic, somente após checkpoint e em estado ocioso verificado sem processos auxiliares; o retorno é manual. Entre contas OpenRouter, mantenha a mesma sessão sem checkpoint em 95%.
+Mantenha as políticas de orquestração separadas: Haiku (leitura), Sonnet, Opus e esforço no claude original, com Fable só sob pedido; os cinco agentes próprios e as cadeias acima no router. Preserve a troca automática por esgotamento reconhecido e o preparo preventivo em 95% da assinatura Anthropic, somente após checkpoint e em estado ocioso verificado sem processos auxiliares; o retorno é manual. Entre contas OpenRouter, mantenha a mesma sessão sem checkpoint em 95%.
 
 Configure o OmniRoute em ~/.omniroute/.env, escutando em 127.0.0.1:20128, preservando chaves de criptografia existentes. O fluxo obrigatório é clauderouter → filtro de modelos gratuitos → OmniRoute → OpenRouter. O original continua direto na Anthropic. OmniRoute deve estar pronto antes da troca automática para o router. Antes de iniciar, verifique http://127.0.0.1:20128/api/health e confirme que a porta pertence ao OmniRoute. Se ele já estiver saudável, reutilize a instância e execute omniroute dashboard para abrir o painel; não inicie outro servidor. Se estiver parado e a porta estiver livre, inicie omniroute serve --no-open. Se a porta pertencer a outro programa ou a saúde falhar, investigue sem encerrar processos automaticamente. Ajude no primeiro acesso e na conexão OpenRouter pelo dashboard http://127.0.0.1:20128/dashboard/providers/openrouter. Cadastre main1 com prioridade 1; outras contas que eu já possuir seguem main2, main3 etc., com prioridade numérica correspondente. Suporte 10–15 contas ou mais, sem criá-las automaticamente. Não invente nem crie contas. Execute python ~/.claude/launcher/runtime/omniroute_pool.py com o Python instalado. Esse comando usa o cliente oficial do OmniRoute para configurar fill-first somente no OpenRouter e uma chave local protegida e restrita aos sete modelos. A seleção de contas fica com OmniRoute, antes das reservas de modelo. Use autenticação legítima; não altere o banco diretamente. Não crie início automático do sistema.
 
@@ -65,15 +65,15 @@ Leia README.md, AGENTS.md, models.json e docs/CATALOGO.md antes de alterar arqui
 
 Configure claude para a assinatura Anthropic original e clauderouter para OpenRouter, em perfis separados. A instalação global deve funcionar sem depender da pasta clonada. Instale todas as skills, agentes e workflows do bundle; use /workflow-* para evitar conflitos com comandos nativos. Memória pessoal permanece desativada.
 
-Respeite exatamente as funções e duplas de models.json:
+Respeite exatamente as funções e cadeias de models.json:
 - Orquestrador: Nemotron 3.5 Lightning → Nemotron 3 Ultra.
-- Programador principal: Gemma 4 31B → Xing4.0 29B A4B.
+- Programador principal: Gemma 4 31B → North Mini Code → Nemotron 3.5 Lightning → Xing4.0 29B A4B.
 - Especialista visual: Nemotron 3.5 Super VL → Gemma 4 31B.
 - Executor rápido: North Mini Code → Gemma 4 26B A4B.
 - Programador auxiliar: Gemma 4 26B A4B → North Mini Code.
-São sete modelos distintos em dez posições. Preserve os nomes originais e descrições de função em /model, os limites de contexto por modelo e as regras de compactação. Não acrescente modelos pagos ou terceiros. Revalide metadados e informe restrições, expiração ou indisponibilidade; não invente substitutos.
+São sete modelos distintos em doze posições. Preserve os nomes originais e descrições de função em /model, os limites de contexto por modelo e as regras de compactação. Não acrescente modelos pagos ou terceiros. Revalide metadados e informe restrições, expiração ou indisponibilidade; não invente substitutos.
 
-Mantenha as políticas de orquestração separadas: Haiku (leitura), Sonnet, Opus e esforço no claude original, com Fable só sob pedido; os cinco agentes próprios e as duplas acima no router. Preserve a troca automática por esgotamento reconhecido e o preparo preventivo em 95% da assinatura Anthropic, somente após checkpoint e em estado ocioso verificado sem processos auxiliares; o retorno é manual. Entre contas OpenRouter, mantenha a mesma sessão sem checkpoint em 95%.
+Mantenha as políticas de orquestração separadas: Haiku (leitura), Sonnet, Opus e esforço no claude original, com Fable só sob pedido; os cinco agentes próprios e as cadeias acima no router. Preserve a troca automática por esgotamento reconhecido e o preparo preventivo em 95% da assinatura Anthropic, somente após checkpoint e em estado ocioso verificado sem processos auxiliares; o retorno é manual. Entre contas OpenRouter, mantenha a mesma sessão sem checkpoint em 95%.
 
 Configure o OmniRoute em ~/.omniroute/.env, escutando em 127.0.0.1:20128, preservando chaves de criptografia existentes. O fluxo obrigatório é clauderouter → filtro de modelos gratuitos → OmniRoute → OpenRouter. O original continua direto na Anthropic. OmniRoute deve estar pronto antes da troca automática para o router. Antes de iniciar, verifique http://127.0.0.1:20128/api/health e confirme que a porta pertence ao OmniRoute. Se ele já estiver saudável, reutilize a instância e execute omniroute dashboard para abrir o painel; não inicie outro servidor. Se estiver parado e a porta estiver livre, inicie omniroute serve --no-open. Se a porta pertencer a outro programa ou a saúde falhar, investigue sem encerrar processos automaticamente. Ajude no primeiro acesso e na conexão OpenRouter pelo dashboard http://127.0.0.1:20128/dashboard/providers/openrouter. Cadastre main1 com prioridade 1; outras contas que eu já possuir seguem main2, main3 etc., com prioridade numérica correspondente. Suporte 10–15 contas ou mais, sem criá-las automaticamente. Não invente nem crie contas. Execute python ~/.claude/launcher/runtime/omniroute_pool.py com o Python instalado. Esse comando usa o cliente oficial do OmniRoute para configurar fill-first somente no OpenRouter e uma chave local protegida e restrita aos sete modelos. A seleção de contas fica com OmniRoute, antes das reservas de modelo. Use autenticação legítima; não altere o banco diretamente. Não crie início automático do sistema.
 
@@ -95,21 +95,23 @@ Prefere instalar pelo terminal? Veja [Windows](#instalar-no-windows) ou [macOS](
 
 ## Equipe obrigatória
 
-| Função | Principal | Reserva |
+| Função | Principal | Reservas, em ordem |
 |---|---|---|
 | Orquestrador | Nemotron 3.5 Lightning | Nemotron 3 Ultra |
-| Programador principal | Gemma 4 31B | Xing4.0 29B A4B |
+| Programador principal | Gemma 4 31B | North Mini Code, Nemotron 3.5 Lightning, Xing4.0 29B A4B |
 | Especialista visual | Nemotron 3.5 Super VL | Gemma 4 31B |
 | Executor rápido | North Mini Code | Gemma 4 26B A4B |
 | Programador auxiliar | Gemma 4 26B A4B | North Mini Code |
 
-São **10 posições, 5 principais e 5 reservas, com 7 modelos distintos**. O seletor `/model` mostra os nomes originais dos sete modelos. `models.json` registra os IDs e as duplas. `router-*` são nomes internos de funções/agentes, não nomes de modelos.
+São **12 posições, 5 principais e 7 reservas, com 7 modelos distintos**. O seletor `/model` mostra os nomes originais dos sete modelos. `models.json` registra os IDs e as cadeias. `router-*` são nomes internos de funções/agentes, não nomes de modelos.
 
 Escolher um modelo principal usa sua reserva por função em falhas elegíveis antes de começar a resposta. Escolher Nemotron 3 Ultra ou Xing4.0 29B A4B diretamente mantém esse modelo, sem inventar uma terceira alternativa. North Mini Code, Gemma 4 26B A4B e Gemma 4 31B também aparecem como reservas de outras funções: a função do agente determina essa relação.
 
 O filtro revalida preços, disponibilidade, suporte a ferramentas, imagens e expiração. Só aceita os sete IDs `:free`, bloqueia recursos pagos e nunca manda imagem a modelo sem suporte visual. Zero preço não significa capacidade ou cota ilimitada.
 
 **Troca de modelos em 05/11/2026:** as variantes gratuitas de Inkling, Inkling Small, Laguna S 2.1 e Laguna XS 2.1 saíram do catálogo do OpenRouter (Inkling e Inkling Small seguem só como modelos pagos; as Laguna não aparecem mais). Foram substituídas, nas mesmas posições, por Nemotron 3.5 Lightning, Gemma 4 31B, Xing4.0 29B A4B e Gemma 4 26B A4B. Os critérios foram: `:free` com preço zero, ferramentas, contexto de pelo menos 256k, resposta máxima publicada e imagem nas duas posições visuais. O coordenador continua com rota de 1M (Nemotron 3.5 Lightning e Nemotron 3 Ultra, ambos servidos pela Nvidia); nas outras duplas, principal e reserva ficam em provedores diferentes. O instalador não contorna restrições nem substitui os modelos por conta própria. Consulte o catálogo ao instalar; uma dupla pode ficar indisponível.
+
+**Cadeia do programador e modo de permissão em 06/11/2026:** no teste real, o Gemma 4 31B estava limitado no provedor e a reserva Xing4.0 escreveu as chamadas de ferramenta como texto (`<tool_call>...`), então o agente terminou com 0 tool uses e sem relatório. O router-coder passou a ter quatro modelos de provedores diferentes, nesta ordem: Gemma 4 31B (Google AI Studio), North Mini Code (Cohere), Nemotron 3.5 Lightning (Nvidia) e Xing4.0 29B A4B (Phala), por último. Nenhum modelo novo entrou na lista de sete. Pedido com imagem continua indo só para o Gemma 4 31B, o único da cadeia com visão. O perfil router saiu do modo `auto`, cujo classificador roda no modelo gratuito do coordenador e expirava junto com ele: agora usa `acceptEdits`, com `npm` e `npx` liberados por regra; outros comandos pedem confirmação. `Shift+Tab` ainda ativa o `auto` numa sessão. O perfil também deixou de carregar o `~/.claude/CLAUDE.md` do perfil original (`claudeMdExcludes`), que entrava como instrução de projeto em qualquer pasta dentro do usuário.
 
 ## Instalar no Windows
 
@@ -154,8 +156,8 @@ Nenhum serviço inicia automaticamente com o sistema. **OmniRoute precisa estar 
 1. O original usa sua assinatura Anthropic e a política Haiku (leitura), Sonnet e Opus; Fable só sob pedido.
 2. Um limite de assinatura reconhecido prepara a continuidade e abre o router quando o encerramento é seguro.
 3. No router, OmniRoute usa primeiro a conta OpenRouter ativa de prioridade 1 (`main1`). Ao reconhecer cota/limite e colocar essa conta em espera, tenta a próxima elegível (`main2`, prioridade 2), mantendo o modelo solicitado.
-4. O filtro só tenta a reserva de modelo após o OmniRoute devolver uma falha elegível (404, 408, 429, 500, 502, 503, 529). Quando o OmniRoute demora, ele já responde HTTP 200 com pings de keepalive e só depois manda o erro dentro do stream; o filtro segura a resposta até o primeiro evento real e trata um limite de requisições ou indisponibilidade nesse ponto como falha elegível. Não repete uma chamada após falha de transporte com resultado incerto nem depois que qualquer conteúdo chegou ao Claude Code. Erros de autenticação, permissão, pagamento ou pedido inválido nunca acionam a reserva.
-5. Cada tentativa espera no máximo 60 s pelo primeiro evento, mais 1 s a cada 16 KB do pedido, com teto de 300 s. Um modelo que respondeu 429 (ou não respondeu no prazo) fica em espera por 60 s, ou pelo `Retry-After`, entre 15 e 300 s, e é pulado nesse período. Se principal e reserva falharem, o filtro devolve 429 ou 504 com `x-should-retry: false` e uma mensagem com a rota e os modelos, para o agente parar e avisar em vez de repetir.
+4. O filtro só tenta o próximo modelo da cadeia após o OmniRoute devolver uma falha elegível (404, 408, 429, 500, 502, 503, 504, 529). Quando o OmniRoute demora, ele já responde HTTP 200 com pings de keepalive e só depois manda o erro dentro do stream; o filtro segura a resposta até o primeiro evento real e trata um limite de requisições ou indisponibilidade nesse ponto como falha elegível. Não repete uma chamada após falha de transporte com resultado incerto nem depois que qualquer conteúdo chegou ao Claude Code. Erros de autenticação, permissão, pagamento ou pedido inválido nunca acionam a reserva.
+5. Cada tentativa espera no máximo 60 s pelo primeiro evento, mais 1 s a cada 16 KB do pedido, com teto de 300 s; a cadeia inteira tem no máximo 420 s, abaixo do prazo de 600 s do Claude Code. Um modelo que falhou (429, 5xx, 504 ou nenhum evento no prazo) fica de lado por 5 min, ou pelo `Retry-After`, entre 15 s e 15 min, e os pedidos seguintes vão direto ao próximo. Se a cadeia inteira falhar, o filtro devolve 429 ou 504 com `x-should-retry: false` e uma mensagem com a rota e os modelos, para o agente parar e avisar em vez de repetir.
 6. Se todas as contas/modelos elegíveis estiverem indisponíveis, a chamada falha claramente; não há créditos ou contas inventados. O retorno à assinatura permanece manual. OmniRoute pode reutilizar uma conta quando sua espera/cota for liberada.
 
 Ao adicionar main2, mantenha a prioridade 2 e execute novamente `omniroute_pool.py` para conferir. O pool é consultado pelo OmniRoute durante o uso; não precisa copiar a chave dessa conta para o perfil Claude. Cotas compartilhadas, restrições do provedor e permissões continuam valendo.

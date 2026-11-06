@@ -176,7 +176,7 @@ def run_router(args, run, continuity=None):
     from omniroute_pool import require_ready
     require_ready(config['url'])
     token = load_secret(ROUTER / 'secrets/omniroute.dpapi')
-    gateway = Gateway(token, upstream=config['url'])
+    gateway = Gateway(token, upstream=config['url'], events_path=run / 'modelos-utilizados.json')
     thread = threading.Thread(target=gateway.serve_forever,daemon=True)
     thread.start()
     env = command_env('router',run)

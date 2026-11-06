@@ -15,6 +15,8 @@
     ],
     "router-coder": [
       "google/gemma-4-31b-it:free",
+      "cohere/north-mini-code:free",
+      "nvidia/nemotron-3.5-lightning:free",
       "xingchen-agi/xing4.0-29b-a4b:free"
     ],
     "router-visual": [
@@ -30,7 +32,7 @@
       "cohere/north-mini-code:free"
     ]
   },
-  "limits_checked_on": "2026-11-05",
+  "limits_checked_on": "2026-11-06",
   "limits": {
     "nvidia/nemotron-3.5-super-vl:free": {
       "context": 1000000,

@@ -33,7 +33,20 @@ def managed_block(existing, addition):
 ORIGINAL_MODELS = ['opus', 'sonnet', 'haiku', 'fable', 'claude-opus-5-5', 'claude-sonnet-5-5', 'claude-haiku-5-5', 'claude-fable-5-1']
 ORIGINAL_ALIASES = {'opus', 'sonnet', 'haiku', 'fable', 'opusplan', 'best', 'default'}
 LEGACY_HAIKU_REMAP = 'claude-sonnet-5-5'
-ROUTER_WRITE_MATCHER = 'Agent|Edit|Write|MultiEdit|NotebookEdit|Bash|PowerShell'
+ROUTER_WRITE_MATCHER = 'Agent|Edit|Write|MultiEdit|NotebookEdit|Bash|PowerShell|Skill|Read'
+# Router hooks: write/delegation gate plus the one-agent-per-shared-model guard.
+ROUTER_EVENTS = {'PreToolUse': ROUTER_WRITE_MATCHER, 'SubagentStart': '', 'SubagentStop': '', 'PostToolUseFailure': 'Agent'}
+# Auto mode's classifier runs on the coordinator's free model and times out with it.
+# The router profile uses acceptEdits plus these rules instead; anything else asks the user.
+ROUTER_MODE = 'acceptEdits'
+ROUTER_ALLOW = ['Bash(npm *)', 'Bash(npx *)', 'PowerShell(npm *)', 'PowerShell(npx *)']
+
+def merge_hooks(hooks, rows_by_event, script):
+    # Replace only this kit's rows; hooks written by the user or other tools stay.
+    for event, rows in rows_by_event.items():
+        previous = [row for row in hooks.get(event, []) if not any(str(script) in hook.get('args', []) for hook in row.get('hooks', []))]
+        hooks[event] = previous + rows
+    return hooks
 
 def original_model_valid(model):
     # Anthropic aliases and claude-* IDs only; router IDs (vendor/model:free) never reach the original.
@@ -151,16 +164,22 @@ class Installer:
         original['availableModels'] = ORIGINAL_MODELS + [model for model in existing if model not in ORIGINAL_MODELS]
         original.setdefault('permissions', {'defaultMode': 'default'})
         events = {'UserPromptSubmit': '', 'SessionStart': '', 'PreToolUse': '', 'PostToolUse': '', 'PostToolUseFailure': '', 'SubagentStart': '', 'SubagentStop': '', 'Stop': '', 'StopFailure': 'rate_limit'}
-        hooks = original.setdefault('hooks', {})
-        for event, rows in hook_config(sys.executable, self.kit, events).items():
-            previous = hooks.get(event, [])
-            previous = [row for row in previous if not any(str(self.kit / 'runtime/hook.py') in hook.get('args', []) for hook in row.get('hooks', []))]
-            hooks[event] = previous + rows
+        merge_hooks(original.setdefault('hooks', {}), hook_config(sys.executable, self.kit, events), self.kit / 'runtime/hook.py')
         self.write(original_path, original)
         router = self.home / '.claude/profiles/router'
         protect_directory(router / 'secrets')
         settings = load(router / 'settings.json')
-        settings.setdefault('permissions', {'defaultMode': 'default'})
+        permissions = settings.setdefault('permissions', {})
+        if permissions.get('defaultMode', 'auto') == 'auto':
+            permissions['defaultMode'] = ROUTER_MODE
+        allow = permissions.setdefault('allow', [])
+        allow += [rule for rule in ROUTER_ALLOW if rule not in allow]
+        # Projects under the home folder would load the original profile's ~/.claude/CLAUDE.md
+        # as project instructions (ancestor walk). The CLI matches forward-slash absolute paths.
+        excluded = settings.setdefault('claudeMdExcludes', [])
+        original_rules = str(self.home / '.claude/CLAUDE.md').replace('\\', '/')
+        if original_rules not in excluded:
+            excluded.append(original_rules)
         settings['model'] = native_model(ROLES['router-orchestrator'][0])
         settings['availableModels'] = list(MODEL_NAMES) + [native_model(model) for model in MODEL_NAMES if native_model(model) != model]
         settings['modelPicker'] = context_picker(PICKER)
@@ -169,7 +188,7 @@ class Installer:
         for key in ('ANTHROPIC_API_KEY','ANTHROPIC_AUTH_TOKEN','ANTHROPIC_BASE_URL'):
             settings['env'].pop(key, None)
         # Agent pins role routes; Edit/Write/shell are gated so the coordinator delegates code.
-        settings.setdefault('hooks', {})['PreToolUse'] = hook_config(sys.executable, self.kit, {'PreToolUse': ROUTER_WRITE_MATCHER})['PreToolUse']
+        merge_hooks(settings.setdefault('hooks', {}), hook_config(sys.executable, self.kit, ROUTER_EVENTS), self.kit / 'runtime/hook.py')
         self.write(router / 'settings.json', settings)
         self.write(router / 'upstream.json', {**load(router / 'upstream.json'), 'url': 'http://127.0.0.1:20128', 'transport': 'omniroute'})
         for template, path in (('CLAUDE.md', self.home / '.claude/CLAUDE.md'), ('GEMINI.md', self.home / '.gemini/GEMINI.md')):

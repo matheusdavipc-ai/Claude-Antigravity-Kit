@@ -63,9 +63,11 @@ class RoutingTests(unittest.TestCase):
             self.assertEqual(self.upstream.seen[-1]['model'],pair[0])
     def test_every_role_reserve_on_unavailable(self):
         for role,pair in core.ROLES.items():
+            # A model that failed sits out its cooldown; each role starts clean here.
+            self.gate.cooling.clear()
             self.upstream.statuses=[503,200]
             self.assertEqual(self.request(role)[0],200)
-            self.assertEqual([r['model'] for r in self.upstream.seen[-2:]],list(pair))
+            self.assertEqual([r['model'] for r in self.upstream.seen[-2:]],list(pair[:2]))
     def test_auth_error_never_tries_reserve(self):
         self.upstream.statuses=[401,200]
         self.assertEqual(self.request()[0],401)
@@ -74,7 +76,7 @@ class RoutingTests(unittest.TestCase):
         self.upstream.harness_refusal=True
         self.upstream.statuses=[403,200]
         self.assertEqual(self.request()[0],200)
-        self.assertEqual([r['model'] for r in self.upstream.seen],list(core.ROLES['router-coder']))
+        self.assertEqual([r['model'] for r in self.upstream.seen],list(core.ROLES['router-coder'][:2]))
     def test_changed_price_blocks_model(self):
         for model in core.ROLES['router-coder']:
             self.gate.catalog[model]['free']=False
@@ -131,7 +133,8 @@ class SafetyTests(unittest.TestCase):
         state.consume({'event':'PostToolUse','tool_id':'background'})
         self.assertFalse(state.idle())
     def test_router_hook_uses_agent_definition_not_invalid_model_override(self):
-        env=dict(os.environ,CLAUDE_PERFIS_PROFILE='router')
+        env={k:v for k,v in os.environ.items() if k!='CLAUDE_PERFIS_RUN'}
+        env['CLAUDE_PERFIS_PROFILE']='router'
         event={'hook_event_name':'PreToolUse','tool_name':'Agent','tool_input':{'subagent_type':'router-fast','model':'sonnet','effort':'xhigh','prompt':'synthetic fixture'}}
         result=subprocess.run([sys.executable,str(core.KIT/'runtime/hook.py')],input=json.dumps(event),text=True,capture_output=True,env=env)
         data=json.loads(result.stdout)['hookSpecificOutput']

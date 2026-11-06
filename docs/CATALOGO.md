@@ -55,7 +55,7 @@ Os workflows genéricos de orquestração do bundle têm instruções do perfil 
 Planeje esta funcionalidade. Delegue a implementação ao router-coder,
 a análise do print ao router-visual e uma tarefa auxiliar delimitada ao
 router-assistant. Revise os resultados e não permita edições concorrentes
-no mesmo arquivo. Mantenha as duplas principal/reserva configuradas.
+no mesmo arquivo. Mantenha as cadeias principal/reservas configuradas.
 ```
 
 ## Skills de conhecimento e coordenação (29)
@@ -181,7 +181,7 @@ A coordenação principal permanece na conversa. Os especialistas recebem tarefa
 | Agente e fonte | Função | Principal → reserva | Pedido de exemplo |
 |---|---|---|---|
 | [router-orchestrator](../templates/router-agents/router-orchestrator.md) | Coordenação, planejamento e revisão. A conversa principal já faz a coordenação. | Nemotron 3.5 Lightning → Nemotron 3 Ultra | Planeje a tarefa, distribua o trabalho pelas funções do router e revise os resultados. |
-| [router-coder](../templates/router-agents/router-coder.md) | Implementação principal de sites, APIs, sistemas e integrações. | Gemma 4 31B → Xing4.0 29B A4B | Delegue ao router-coder a implementação da API de pedidos e seus testes pertinentes. |
+| [router-coder](../templates/router-agents/router-coder.md) | Implementação principal de sites, APIs, sistemas e integrações. | Gemma 4 31B → North Mini Code → Nemotron 3.5 Lightning → Xing4.0 29B A4B | Delegue ao router-coder a implementação da API de pedidos e seus testes pertinentes. |
 | [router-visual](../templates/router-agents/router-visual.md) | Análise de imagens e referências de interface. | Nemotron 3.5 Super VL → Gemma 4 31B | Use router-visual para analisar este print e descrever hierarquia, espaçamentos e diferenças. |
 | [router-fast](../templates/router-agents/router-fast.md) | Trabalhos curtos e bem delimitados. | North Mini Code → Gemma 4 26B A4B | Delegue ao router-fast a correção destas mensagens de validação. |
 | [router-assistant](../templates/router-agents/router-assistant.md) | Tarefas auxiliares e apoio à implementação principal. | Gemma 4 26B A4B → North Mini Code | Delegue ao router-assistant a análise dos testes existentes e a lista de lacunas. |

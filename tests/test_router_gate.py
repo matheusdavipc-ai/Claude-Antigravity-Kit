@@ -159,6 +159,144 @@ class GateTests(unittest.TestCase):
         self.assertNotIn(b'deny', result.stdout)
 
 
+class CoordinatorHardeningTests(unittest.TestCase):
+    """Skill names, shared kit instructions and parallel agents on the same free models."""
+
+    def setUp(self):
+        self.temp = tempfile.TemporaryDirectory()
+        self.root = Path(self.temp.name)
+        self.cwd = self.root / 'projeto-ação'
+        self.cwd.mkdir()
+        self.run_dir = self.root / 'run'
+        self.run_dir.mkdir()
+        self.home = self.root / 'home'
+        self.env = patch.dict(os.environ, clean_env(CLAUDE_KIT_HOME=str(self.home)), clear=True)
+        self.env.start()
+
+    def tearDown(self):
+        self.env.stop()
+        self.temp.cleanup()
+
+    def hook(self, event, run=True):
+        env = clean_env(CLAUDE_PERFIS_PROFILE='router', CLAUDE_KIT_HOME=str(self.home))
+        if run:
+            env['CLAUDE_PERFIS_RUN'] = str(self.run_dir)
+        result = subprocess.run([sys.executable, str(HOOK)], input=json.dumps(event, ensure_ascii=False).encode('utf-8'),
+                                capture_output=True, env=env)
+        self.assertEqual(result.returncode, 0, result.stderr.decode('utf-8', 'replace'))
+        return json.loads(result.stdout)['hookSpecificOutput'] if result.stdout.strip() else None
+
+    def agent(self, role, tool_id):
+        return {'hook_event_name': 'PreToolUse', 'tool_name': 'Agent', 'tool_use_id': tool_id, 'cwd': str(self.cwd),
+                'transcript_path': str(self.root / 'sessao.jsonl'),
+                'tool_input': {'subagent_type': role, 'description': 'x', 'prompt': 'y', 'model': 'sonnet', 'effort': 'high'}}
+
+    def test_skill_named_after_router_agent_is_denied(self):
+        for name in ('router-coder', '/router-fast', 'kit:router-visual', 'Router-Assistant extra'):
+            reason = router_gate.check({'tool_name': 'Skill', 'tool_input': {'skill': name}, 'cwd': str(self.cwd)})
+            self.assertIsNotNone(reason, name)
+            self.assertIn('Agent(subagent_type="router-', reason)
+        for name in ('tailwind-patterns', 'webapp-testing', 'routerish'):
+            self.assertIsNone(router_gate.check({'tool_name': 'Skill', 'tool_input': {'skill': name}, 'cwd': str(self.cwd)}), name)
+        denied = self.hook({'hook_event_name': 'PreToolUse', 'tool_name': 'Skill', 'tool_input': {'skill': 'router-coder'}, 'cwd': str(self.cwd)})
+        self.assertEqual(denied['permissionDecision'], 'deny')
+
+    def test_shared_kit_agents_md_is_not_read(self):
+        shared = self.home / '.gemini/config/skills/AGENTS.md'
+        shared.parent.mkdir(parents=True)
+        shared.write_text('shared rules')
+        profile = self.root / 'router-profile'
+        (profile / 'skills').mkdir(parents=True)
+        (profile / 'skills/AGENTS.md').write_text('shared rules copy')
+        with patch.dict(os.environ, {'CLAUDE_CONFIG_DIR': str(profile)}):
+            for path in (shared, profile / 'skills/AGENTS.md'):
+                reason = router_gate.check({'tool_name': 'Read', 'tool_input': {'file_path': str(path)}, 'cwd': str(self.cwd)})
+                self.assertIn('AGENTS.md compartilhado', reason)
+            # The project's own instructions stay readable.
+            self.assertIsNone(router_gate.check({'tool_name': 'Read', 'tool_input': {'file_path': str(self.cwd / 'AGENTS.md')}, 'cwd': str(self.cwd)}))
+
+    @unittest.skipUnless(os.name == 'nt', 'directory junctions exist only on Windows')
+    def test_shared_agents_md_through_junction_is_not_read(self):
+        shared = self.home / '.gemini/config/skills'
+        shared.mkdir(parents=True)
+        (shared / 'AGENTS.md').write_text('shared rules')
+        link = self.home / '.claude/profiles/router/skills'
+        link.parent.mkdir(parents=True)
+        subprocess.run(['cmd', '/c', 'mklink', '/J', str(link), str(shared)], check=True, capture_output=True)
+        try:
+            reason = router_gate.check({'tool_name': 'Read', 'tool_input': {'file_path': str(link / 'AGENTS.md')}, 'cwd': str(self.cwd)})
+            self.assertIn('AGENTS.md compartilhado', reason)
+        finally:
+            os.rmdir(link)  # Removes only the junction, never the target's files.
+        self.assertTrue((shared / 'AGENTS.md').is_file())
+
+    def test_second_agent_on_shared_models_waits_for_the_first(self):
+        first = self.hook(self.agent('router-coder', 'call-1'))
+        self.assertEqual(first['permissionDecision'], 'allow')
+        self.assertNotIn('model', first['updatedInput'])
+        # North Mini Code and Gemma 4 31B are in the coder chain too.
+        for role in ('router-fast', 'router-visual', 'router-coder', 'router-assistant'):
+            denied = self.hook(self.agent(role, 'call-' + role))
+            self.assertEqual(denied['permissionDecision'], 'deny', role)
+            self.assertIn('Espere o relatorio', denied['permissionDecisionReason'])
+        self.hook({'hook_event_name': 'SubagentStart', 'agent_id': 'a1', 'agent_type': 'router-coder', 'transcript_path': str(self.root / 'sessao.jsonl')})
+        self.assertIsNone(self.hook({'hook_event_name': 'SubagentStop', 'agent_id': 'a1', 'agent_type': 'router-coder'}))
+        self.assertEqual(self.hook(self.agent('router-fast', 'call-2'))['permissionDecision'], 'allow')
+
+    def test_agents_without_shared_models_may_run_together(self):
+        self.assertEqual(self.hook(self.agent('router-visual', 'v1'))['permissionDecision'], 'allow')
+        self.assertEqual(self.hook(self.agent('router-fast', 'f1'))['permissionDecision'], 'allow')
+        self.assertEqual(self.hook(self.agent('router-assistant', 'a1'))['permissionDecision'], 'deny')
+
+    def test_failed_launch_and_finished_meta_free_the_slot(self):
+        self.hook(self.agent('router-coder', 'call-1'))
+        self.hook({'hook_event_name': 'PostToolUseFailure', 'tool_name': 'Agent', 'tool_use_id': 'call-1'})
+        self.assertEqual(self.hook(self.agent('router-coder', 'call-2'))['permissionDecision'], 'allow')
+        # SubagentStop never arrived, but the agent's own meta says it finished.
+        self.hook({'hook_event_name': 'SubagentStart', 'agent_id': 'b2', 'agent_type': 'router-coder', 'transcript_path': str(self.root / 'sessao.jsonl')})
+        transcript = self.root / 'sessao/subagents/agent-b2.jsonl'
+        transcript.parent.mkdir(parents=True)
+        transcript.write_text('{}\n')
+        self.assertEqual(self.hook(self.agent('router-fast', 'call-3'))['permissionDecision'], 'deny')
+        transcript.with_name('agent-b2.meta.json').write_text(json.dumps({'agentType': 'router-coder', 'toolUseId': 'call-2', 'finished': True}))
+        self.assertEqual(self.hook(self.agent('router-fast', 'call-3'))['permissionDecision'], 'allow')
+
+    def test_simultaneous_calls_allow_exactly_one(self):
+        env = clean_env(CLAUDE_PERFIS_PROFILE='router', CLAUDE_KIT_HOME=str(self.home), CLAUDE_PERFIS_RUN=str(self.run_dir))
+        processes = [subprocess.Popen([sys.executable, str(HOOK)], stdin=subprocess.PIPE, stdout=subprocess.PIPE, env=env) for _ in range(4)]
+        for index, process in enumerate(processes):
+            process.stdin.write(json.dumps(self.agent('router-coder', 'par-' + str(index))).encode())
+            process.stdin.close()
+        decisions = [json.loads(process.stdout.read())['hookSpecificOutput']['permissionDecision'] for process in processes]
+        for process in processes:
+            process.wait()
+            process.stdout.close()
+        self.assertEqual(sorted(decisions), ['allow', 'deny', 'deny', 'deny'])
+
+    def test_bookkeeping_never_blocks_a_stopping_agent(self):
+        (self.run_dir / 'agentes-router.json').write_text('not json')
+        for event in ({'hook_event_name': 'SubagentStop', 'agent_id': 'x'}, {'hook_event_name': 'SubagentStart'},
+                      {'hook_event_name': 'PostToolUseFailure', 'tool_name': 'Agent', 'tool_use_id': 'z'}):
+            self.assertIsNone(self.hook(event))
+            self.assertIsNone(self.hook(event, run=False))
+        # Without a supervised run directory the guard stays out of the way.
+        self.assertEqual(self.hook(self.agent('router-coder', 'n1'), run=False)['permissionDecision'], 'allow')
+        self.assertEqual(self.hook(self.agent('router-coder', 'n2'), run=False)['permissionDecision'], 'allow')
+
+    def test_router_instructions_short_with_literal_example_and_verification(self):
+        text = (ROOT / 'templates/ROUTER.md').read_text(encoding='utf-8')
+        self.assertLess(len(text), 7000)
+        for required in ('Agent(subagent_type="router-coder"', 'nunca use Skill("router-coder")', '0 tool uses', 'sem relatorio',
+                         'Glob/Grep', 'UMA vez', 'Na segunda falha, pare e avise', 'um agente por vez', 'Nao leia o AGENTS.md compartilhado'):
+            self.assertIn(required, text)
+        self.assertNotIn('config/skills/AGENTS.md', text)
+        for model in core.ROLES['router-coder']:
+            self.assertIn(core.MODEL_NAMES[model], text)
+        coder = (ROOT / 'templates/router-agents/router-coder.md').read_text(encoding='utf-8')
+        self.assertIn('real tool calls', coder)
+        self.assertIn(', '.join(core.ROLES['router-coder']), coder)
+
+
 class AgentModelTests(unittest.TestCase):
     """Each router agent's frontmatter model reaches its own principal through the filter."""
 

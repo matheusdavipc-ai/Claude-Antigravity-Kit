@@ -2,6 +2,7 @@
 import http.client
 import json
 import sys
+import tempfile
 import threading
 import time
 import unittest
@@ -13,7 +14,8 @@ import core
 import gateway
 
 IMAGE = {'google/gemma-4-31b-it:free', 'google/gemma-4-26b-a4b-it:free', 'nvidia/nemotron-3.5-super-vl:free'}
-CODER, CODER_RESERVE = core.ROLES['router-coder']
+CHAIN = core.ROLES['router-coder']
+CODER, CODER_RESERVE = CHAIN[:2]
 VISUAL, VISUAL_RESERVE = core.ROLES['router-visual']
 PING = b'event: ping\ndata: {"type":"ping"}\n\n'
 # What OmniRoute 3.8.51 writes into its early 200 stream after every account answered 429.
@@ -42,6 +44,14 @@ class FakeOmniRoute(BaseHTTPRequestHandler):
         self.server.seen.append(model)
         script = self.server.scripts.get(model, [])
         action = script.pop(0) if script else 'ok'
+        if action == 'http504':
+            data = b'{"error":{"message":"Gateway Timeout","type":"api_error"}}'
+            self.send_response(504)
+            self.send_header('Content-Type', 'application/json')
+            self.send_header('Content-Length', str(len(data)))
+            self.end_headers()
+            self.wfile.write(data)
+            return
         if action == 'http429':
             data = json.dumps({'error': {'message': 'Rate limit exceeded', 'type': 'rate_limit_error'}}).encode()
             self.send_response(429)
@@ -71,7 +81,7 @@ class FakeOmniRoute(BaseHTTPRequestHandler):
                 self.server.abandoned.append(model)
 
 
-class ReserveTests(unittest.TestCase):
+class Harness(unittest.TestCase):
     def setUp(self):
         self.upstream = ThreadingHTTPServer(('127.0.0.1', 0), FakeOmniRoute)
         self.upstream.seen, self.upstream.scripts, self.upstream.abandoned = [], {}, []
@@ -94,6 +104,8 @@ class ReserveTests(unittest.TestCase):
         connection.close()
         return result
 
+
+class ReserveTests(Harness):
     def test_rate_limit_inside_stream_uses_reserve(self):
         self.upstream.scripts[CODER] = ['stream429']
         status, headers, data = self.request()
@@ -110,25 +122,25 @@ class ReserveTests(unittest.TestCase):
         self.assertEqual(self.request()[0], 200)
         self.assertEqual(self.upstream.seen, [CODER, CODER_RESERVE, CODER_RESERVE])
 
-    def test_rate_limit_on_both_stops_and_reports_without_cycling(self):
-        self.upstream.scripts[CODER] = ['stream429']
-        self.upstream.scripts[CODER_RESERVE] = ['stream429']
+    def test_rate_limit_on_whole_chain_stops_and_reports_without_cycling(self):
+        for model in CHAIN:
+            self.upstream.scripts[model] = ['stream429']
         status, headers, data = self.request()
         self.assertEqual(status, 429)
         self.assertEqual(headers['x-should-retry'], 'false')
         self.assertGreaterEqual(int(headers['Retry-After']), 15)
         error = json.loads(data)['error']
         self.assertEqual(error['type'], 'rate_limit_error')
-        for text in ('router-coder', core.MODEL_NAMES[CODER], core.MODEL_NAMES[CODER_RESERVE], 'informe o usuario'):
+        for text in ('router-coder', *(core.MODEL_NAMES[m] for m in CHAIN), 'informe o usuario'):
             self.assertIn(text, error['message'])
-        self.assertEqual(self.upstream.seen, [CODER, CODER_RESERVE])
+        self.assertEqual(self.upstream.seen, list(CHAIN))
         # Attempt limit: while both models cool down, a new request fails at once without an upstream call.
         start = time.monotonic()
         status, headers, _ = self.request()
         self.assertEqual(status, 429)
         self.assertEqual(headers['x-should-retry'], 'false')
         self.assertLess(time.monotonic() - start, 2)
-        self.assertEqual(self.upstream.seen, [CODER, CODER_RESERVE])
+        self.assertEqual(self.upstream.seen, list(CHAIN))
 
     def test_stalled_principal_is_abandoned_at_the_deadline(self):
         self.gate.first_event_seconds = (.6, .6)
@@ -145,10 +157,10 @@ class ReserveTests(unittest.TestCase):
             time.sleep(.05)
         self.assertEqual(self.upstream.abandoned, [CODER])
 
-    def test_stall_on_both_returns_timeout_instead_of_waiting(self):
+    def test_stall_on_whole_chain_returns_timeout_instead_of_waiting(self):
         self.gate.first_event_seconds = (.4, .4)
-        self.upstream.scripts[CODER] = ['stall']
-        self.upstream.scripts[CODER_RESERVE] = ['stall']
+        for model in CHAIN:
+            self.upstream.scripts[model] = ['stall']
         start = time.monotonic()
         status, headers, data = self.request()
         self.assertEqual(status, 504)
@@ -161,7 +173,7 @@ class ReserveTests(unittest.TestCase):
         self.upstream.scripts[CODER] = ['stream429']
         status, _, data = self.request('router-coder', image)
         self.assertEqual(status, 429)
-        self.assertEqual(self.upstream.seen, [CODER])  # Xing4.0 has no image input
+        self.assertEqual(self.upstream.seen, [CODER])  # the rest of the coder chain has no image input
         self.assertNotIn(CODER_RESERVE, json.loads(data)['error']['message'])
         # The visual role's reserve accepts images, so it is used.
         self.upstream.scripts[VISUAL] = ['stream429']
@@ -196,6 +208,71 @@ class ReserveTests(unittest.TestCase):
         time.sleep(.3)
         self.assertEqual(self.request()[0], 200)
         self.assertEqual(self.upstream.seen, [CODER, CODER_RESERVE, CODER])
+
+
+class ChainTests(Harness):
+    """router-coder chain: four providers, a failed model sits out, bounded total wait."""
+
+    def test_coder_chain_spans_four_providers_with_xing_last(self):
+        self.assertEqual(CHAIN, ('google/gemma-4-31b-it:free', 'cohere/north-mini-code:free',
+                                 'nvidia/nemotron-3.5-lightning:free', 'xingchen-agi/xing4.0-29b-a4b:free'))
+        self.assertEqual(len({model.split('/')[0] for model in CHAIN}), 4)
+        for model in CHAIN[:3]:
+            self.upstream.scripts[model] = ['stream429']
+        status, headers, data = self.request()
+        self.assertEqual(status, 200)
+        self.assertEqual(self.upstream.seen, list(CHAIN))
+        self.assertEqual(headers['X-Claude-Perfis-Model'], CHAIN[3])
+
+    def test_default_cooldown_is_five_minutes_and_retry_after_is_bounded(self):
+        self.assertEqual(gateway.COOLDOWN_SECONDS, (15, 300, 900))
+        self.gate.cool(CHAIN[0])
+        self.assertAlmostEqual(self.gate.cooling_left(CHAIN[0]), 300, delta=2)
+        self.gate.cool(CHAIN[1], 86400)
+        self.assertAlmostEqual(self.gate.cooling_left(CHAIN[1]), 900, delta=2)
+        self.gate.cool(CHAIN[2], 1)
+        self.assertAlmostEqual(self.gate.cooling_left(CHAIN[2]), 15, delta=2)
+        # A provider's Retry-After inside the bounds is used as given.
+        self.upstream.scripts[CHAIN[3]] = ['http429']
+        self.assertEqual(self.request(CHAIN[3])[0], 429)
+        self.assertAlmostEqual(self.gate.cooling_left(CHAIN[3]), 30, delta=2)
+
+    def test_http_504_moves_to_next_model_and_sets_it_aside(self):
+        self.upstream.scripts[CODER] = ['http504']
+        self.assertEqual(self.request()[0], 200)
+        self.assertEqual(self.request()[0], 200)
+        self.assertEqual(self.upstream.seen, [CODER, CODER_RESERVE, CODER_RESERVE])
+        self.assertAlmostEqual(self.gate.cooling_left(CODER), 300, delta=2)
+
+    def test_stalled_model_is_not_waited_on_again_by_the_next_request(self):
+        self.gate.first_event_seconds = (.6, .6)
+        self.upstream.scripts[CODER] = ['stall']
+        self.assertEqual(self.request()[0], 200)
+        start = time.monotonic()
+        self.assertEqual(self.request()[0], 200)
+        self.assertLess(time.monotonic() - start, .5)  # no second wait on the stalled model
+        self.assertEqual(self.upstream.seen, [CODER, CODER_RESERVE, CODER_RESERVE])
+
+    def test_chain_budget_stops_before_another_full_wait(self):
+        self.gate.first_event_seconds = (.5, .5)
+        self.gate.chain_seconds = 1.6
+        for model in CHAIN:
+            self.upstream.scripts[model] = ['stall']
+        start = time.monotonic()
+        status, headers, data = self.request()
+        self.assertLess(time.monotonic() - start, 3)
+        self.assertEqual(status, 504)
+        self.assertEqual(headers['x-should-retry'], 'false')
+        self.assertIn('prazo total da cadeia esgotado', json.loads(data)['error']['message'])
+        self.assertLess(len(self.upstream.seen), len(CHAIN))
+
+    def test_events_are_saved_as_they_happen(self):
+        with tempfile.TemporaryDirectory() as folder:
+            self.gate.events_path = Path(folder) / 'modelos-utilizados.json'
+            self.upstream.scripts[CODER] = ['stream429']
+            self.assertEqual(self.request()[0], 200)
+            saved = json.loads(self.gate.events_path.read_text(encoding='utf-8'))
+            self.assertEqual([(e['model'], e['outcome']) for e in saved], [(CODER, 'reserve-next'), (CODER_RESERVE, 'response')])
 
 
 class ClassificationTests(unittest.TestCase):

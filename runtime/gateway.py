@@ -10,21 +10,25 @@ import time
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from urllib.parse import urlsplit
 from context_config import response_budget
-from core import KIT, ROLES, MODELS, get_catalog, safe_candidate, MODEL_NAMES, PRIMARY_ROLES
+from core import KIT, ROLES, MODELS, get_catalog, safe_candidate, MODEL_NAMES, PRIMARY_ROLES, atomic_json
 
 # Statuses that mean "this model is unavailable now", never "this request is wrong".
-RESERVE_STATUSES = (404,408,429,500,502,503,529)
-# A rate-limited model is skipped for this long (Retry-After when the provider sends one).
-COOLDOWN_SECONDS = (15, 60, 300)  # minimum, default, maximum
+RESERVE_STATUSES = (404,408,429,500,502,503,504,529)
+# An unavailable model is set aside for 5 min, or for its Retry-After within these bounds,
+# so later requests go straight to the next model instead of waiting on it again.
+COOLDOWN_SECONDS = (15, 300, 900)  # minimum, default, maximum
 # OmniRoute answers a slow stream with HTTP 200 and keepalive pings while it cycles accounts.
 # Wait at most this long for the first real event: base, plus 1 s per 16 KB of request, capped.
 FIRST_EVENT_SECONDS = (60, 300)
 FIRST_EVENT_BYTES_PER_SECOND = 16384
+# Whole chain, all models together: stays below the native client's 600 s request timeout,
+# so a long chain never makes the client resend the request.
+CHAIN_SECONDS = 420
 PRECOMMIT_LIMIT = 1024*1024
 
 class Gateway(ThreadingHTTPServer):
     daemon_threads = True
-    def __init__(self, upstream_token, catalog=None, upstream='http://127.0.0.1:20128', testing=False, transport='omniroute'):
+    def __init__(self, upstream_token, catalog=None, upstream='http://127.0.0.1:20128', testing=False, transport='omniroute', events_path=None):
         super().__init__(('127.0.0.1', 0), Handler)
         self.token = secrets.token_urlsafe(32)
         self.upstream_token = upstream_token
@@ -44,7 +48,10 @@ class Gateway(ThreadingHTTPServer):
         self.events = []
         self.cooldown_seconds = COOLDOWN_SECONDS
         self.first_event_seconds = FIRST_EVENT_SECONDS
+        self.chain_seconds = CHAIN_SECONDS
         self.cooling = {}
+        # Saved after every event, so a closed terminal still leaves the record behind.
+        self.events_path = events_path
 
     def cool(self, model, seconds=None):
         low, default, high = self.cooldown_seconds
@@ -147,21 +154,27 @@ class Handler(BaseHTTPRequestHandler):
             # Hosted search tools can incur separate charges; keep ordinary function tools.
             if 'tools' in body:
                 body['tools'] = [tool for tool in body['tools'] if tool.get('type','custom') == 'custom']
-            # A model that just hit its rate limit is skipped instead of cycling through it again.
+            # A model that was just unavailable is skipped instead of cycling through it again.
             available = [m for m in candidates if not self.server.cooling_left(m)]
             if not available:
                 wait = math.ceil(min(self.server.cooling_left(m) for m in candidates))
                 self.record(role,candidates[0],'blocked-cooling',429)
-                return self.send_unavailable(429, role, candidates, 'limite de requisicoes no provedor gratuito', wait)
+                return self.send_unavailable(429, role, candidates, 'todos os modelos em espera apos falha recente', wait)
             with self.server.lock:
                 self.server.active += 1
+            chain_end = time.monotonic() + self.server.chain_seconds
             try:
                 for index, model in enumerate(available):
                     last = index + 1 == len(available)
+                    remaining = chain_end - time.monotonic()
+                    if remaining <= 1:
+                        # Budget spent on earlier models: report instead of starting another wait.
+                        self.record(role,model,'blocked-chain-deadline',504)
+                        return self.send_unavailable(504, role, available[:index], 'prazo total da cadeia esgotado', self.server.cooldown_seconds[1])
                     body['model'] = ('openrouter/' if self.server.transport == 'omniroute' else '') + model
                     payload = json.dumps(body).encode()
                     cls = http.client.HTTPSConnection if self.server.upstream.scheme == 'https' else http.client.HTTPConnection
-                    connection = cls(self.server.upstream.hostname, self.server.upstream.port, timeout=180)
+                    connection = cls(self.server.upstream.hostname, self.server.upstream.port, timeout=max(5, min(180, remaining)))
                     headers = {'Content-Type':'application/json','Authorization':'Bearer '+self.server.upstream_token,
                                'anthropic-version':self.headers.get('anthropic-version','2023-06-01')}
                     # Preserve authentic harness attribution; never fabricate a different app.
@@ -183,34 +196,34 @@ class Handler(BaseHTTPRequestHandler):
                         # A model-specific harness eligibility refusal is unavailability,
                         # not invalid credentials. Other 403s never trigger reserve.
                         restricted_model = b'only available on agentic harnesses' in buffered and model.encode() in buffered
-                    if response.status == 429:
+                    if response.status in RESERVE_STATUSES or restricted_model:
                         self.server.cool(model, retry_after(response.getheader('Retry-After')))
                     if (response.status in RESERVE_STATUSES or restricted_model) and not last:
                         if buffered is None:
                             response.read()
                         connection.close()
                         self.record(role,model,'reserve-next',response.status)
-                        print('[clauderouter] '+role+': principal indisponivel (HTTP '+str(response.status)+'); reserva '+available[index+1],flush=True)
+                        print('[clauderouter] '+role+': '+MODEL_NAMES.get(model,model)+' indisponivel (HTTP '+str(response.status)+'); proximo: '+MODEL_NAMES.get(available[index+1],available[index+1]),flush=True)
                         continue
                     if (response.status == 200 and path == '/v1/messages'
                             and 'text/event-stream' in (response.getheader('Content-Type') or '').lower()):
                         # Nothing reaches the client until the first real event, so a failure
                         # reported inside the stream can still move to the reserve without
                         # replaying anything the client has seen.
-                        deadline = time.monotonic() + self.server.first_event_timeout(len(payload))
+                        deadline = min(chain_end, time.monotonic() + self.server.first_event_timeout(len(payload)))
                         outcome, buffered, failure = first_event(response, upstream_socket, model, deadline)
                         if outcome == 'reset':
                             connection.close()
                             return self.send_json(502, {'error':{'type':'api_error','message':'Upstream transport failure; no automatic replay'}})
                         if outcome in ('failure', 'timeout'):
                             connection.close()  # Ends the upstream attempt; OmniRoute stops its pings.
-                            status, wait, rate_limited = failure if outcome == 'failure' else (504, None, True)
-                            if rate_limited:
-                                self.server.cool(model, wait)
+                            status, wait, _ = failure if outcome == 'failure' else (504, None, True)
+                            # Rate limit, overload or silence: the model sits out its cooldown.
+                            self.server.cool(model, wait)
                             self.record(role,model,'reserve-next' if not last else 'blocked',status)
                             if not last:
                                 reason = 'sem primeiro evento no prazo' if outcome == 'timeout' else 'HTTP '+str(status)+' no stream'
-                                print('[clauderouter] '+role+': principal indisponivel ('+reason+'); reserva '+available[index+1],flush=True)
+                                print('[clauderouter] '+role+': '+MODEL_NAMES.get(model,model)+' indisponivel ('+reason+'); proximo: '+MODEL_NAMES.get(available[index+1],available[index+1]),flush=True)
                                 continue
                             if outcome == 'timeout':
                                 return self.send_unavailable(504, role, available, 'sem resposta dentro do prazo', self.server.cooldown_seconds[1])
@@ -250,7 +263,7 @@ class Handler(BaseHTTPRequestHandler):
 
     def send_unavailable(self, status, role, models, reason, wait):
         # Tell the caller to stop: the agent reports the blocked route instead of retrying it.
-        names = ' e '.join(MODEL_NAMES.get(m, m) for m in models)
+        names = ', '.join(MODEL_NAMES.get(m, m) for m in models) or 'nenhum modelo tentado'
         message = 'Rota '+role+' indisponivel ('+reason+'): '+names+'. Nenhum outro modelo sera tentado; informe o usuario.'
         if wait:
             message += ' Nova tentativa possivel em '+str(wait)+' s.'
@@ -270,6 +283,11 @@ class Handler(BaseHTTPRequestHandler):
             event['connection_id'] = connection_id
         with self.server.lock:
             self.server.events.append(event)
+            if self.server.events_path:
+                try:
+                    atomic_json(self.server.events_path, self.server.events)
+                except OSError:
+                    pass  # The record is best effort; never fail a request over it.
 
 def retry_after(value):
     try:

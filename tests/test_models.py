@@ -12,9 +12,10 @@ import core
 class ModelNamesTests(test_profiles.RoutingTests):
     def test_original_ids_keep_role_reserves(self):
         for role, pair in core.ROLES.items():
+            self.gate.cooling.clear()
             self.upstream.statuses = [503, 200]
             self.assertEqual(self.request(pair[0])[0], 200)
-            self.assertEqual([row['model'] for row in self.upstream.seen[-2:]], list(pair))
+            self.assertEqual([row['model'] for row in self.upstream.seen[-2:]], list(pair[:2]))
 
     def test_discovery_contains_seven_original_names(self):
         connection = http.client.HTTPConnection('127.0.0.1', self.gate.server_port, timeout=5)
@@ -38,7 +39,7 @@ class ModelNamesTests(test_profiles.RoutingTests):
         self.upstream.statuses = [503, 200]
         self.assertEqual(self.request(pair[0] + '[1m]', max_tokens=200000)[0], 200)
         self.assertEqual([row['max_tokens'] for row in self.upstream.seen], [32768, 32768])
-        self.assertEqual([row['model'] for row in self.upstream.seen], list(pair))
+        self.assertEqual([row['model'] for row in self.upstream.seen], list(pair[:2]))
 
     def test_invalid_response_budget_never_reaches_provider(self):
         self.assertEqual(self.request(max_tokens='invalid')[0], 400)

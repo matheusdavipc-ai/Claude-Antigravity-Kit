@@ -64,7 +64,7 @@ class InstallTests(unittest.TestCase):
             self.assertNotIn('ANTHROPIC_BASE_URL', installed['env'])
             self.assertEqual(installed['permissions']['additionalDirectories'], ['example-directory'])
             router_hooks = install.load(home / '.claude/profiles/router/settings.json')['hooks']['PreToolUse']
-            self.assertEqual(set(router_hooks[0]['matcher'].split('|')), {'Agent','Edit','Write','MultiEdit','NotebookEdit','Bash','PowerShell'})
+            self.assertEqual(set(router_hooks[0]['matcher'].split('|')), {'Agent','Edit','Write','MultiEdit','NotebookEdit','Bash','PowerShell','Skill','Read'})
             self.assertEqual(unrelated.read_text(), 'unrelated custom skill')
             self.assertIn('Existing user instructions.', instructions.read_text())
             router = install.load(home / '.claude/profiles/router/settings.json')
@@ -115,6 +115,46 @@ class InstallTests(unittest.TestCase):
                 self.assertEqual(installed['model'], expected)
                 self.assertEqual(installed['env']['ANTHROPIC_DEFAULT_HAIKU_MODEL'], 'claude-haiku-5-5')
                 self.assertEqual(installed['availableModels'][:8], install.ORIGINAL_MODELS)
+
+    def test_router_profile_mode_exclusions_and_hooks(self):
+        with tempfile.TemporaryDirectory() as temp:
+            home = Path(temp)
+            native = home / '.local/bin/claude.exe'
+            native.parent.mkdir(parents=True)
+            native.write_text('test fixture only')
+            router_path = home / '.claude/profiles/router/settings.json'
+            router_path.parent.mkdir(parents=True)
+            user_hook = {'matcher': 'Bash', 'hooks': [{'type': 'command', 'command': 'my-own-check'}]}
+            router_path.write_text(json.dumps({'permissions': {'defaultMode': 'auto', 'allow': ['Bash(make *)']},
+                                               'claudeMdExcludes': ['C:/elsewhere/CLAUDE.md'], 'hooks': {'PreToolUse': [user_hook]}}))
+            install.Installer(home).install(native, update_path=False)
+            router = install.load(router_path)
+            # Auto mode's classifier would run on a free model: the router profile leaves auto.
+            self.assertEqual(router['permissions']['defaultMode'], 'acceptEdits')
+            self.assertEqual(router['permissions']['allow'], ['Bash(make *)'] + install.ROUTER_ALLOW)
+            home_rules = str(home / '.claude/CLAUDE.md').replace('\\', '/')
+            self.assertEqual(router['claudeMdExcludes'], ['C:/elsewhere/CLAUDE.md', home_rules])
+            hooks = router['hooks']
+            self.assertIn(user_hook, hooks['PreToolUse'])
+            for event, matcher in install.ROUTER_EVENTS.items():
+                ours = [row for row in hooks[event] if any('hook.py' in arg for h in row['hooks'] for arg in h.get('args', []))]
+                self.assertEqual([row['matcher'] for row in ours], [matcher], event)
+            # Reinstall is idempotent and a mode the user chose later is kept.
+            router['permissions']['defaultMode'] = 'default'
+            router_path.write_text(json.dumps(router))
+            install.Installer(home).install(native, update_path=False)
+            again = install.load(router_path)
+            self.assertEqual(again['permissions']['defaultMode'], 'default')
+            self.assertEqual(again['permissions']['allow'], router['permissions']['allow'])
+            self.assertEqual(again['claudeMdExcludes'], router['claudeMdExcludes'])
+            self.assertEqual(len(again['hooks']['PreToolUse']), 2)
+            self.assertEqual(len(again['hooks']['SubagentStop']), 1)
+            # A fresh profile also starts outside auto mode.
+            fresh = Path(temp) / 'fresh'
+            (fresh / '.local/bin').mkdir(parents=True)
+            (fresh / '.local/bin/claude.exe').write_text('test fixture only')
+            install.Installer(fresh).install(fresh / '.local/bin/claude.exe', update_path=False)
+            self.assertEqual(install.load(fresh / '.claude/profiles/router/settings.json')['permissions']['defaultMode'], 'acceptEdits')
 
     def test_external_link_refused(self):
         with tempfile.TemporaryDirectory() as temp, tempfile.TemporaryDirectory() as external:

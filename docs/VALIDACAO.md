@@ -134,3 +134,25 @@ Agora o filtro lê o stream sem entregar nada ao Claude Code até o primeiro eve
 - a classificação dos erros.
 
 Contra o filtro antigo, 8 dos 9 testes de rota falham.
+
+## Cadeia do router-coder, auto mode e coordenador (06/11/2026)
+
+Diagnóstico pelo transcript do agente que terminou com 0 tool uses:
+- o pedido saiu para o Gemma 4 31B; sem primeiro evento no prazo, o filtro passou ao Xing4.0;
+- o Xing4.0 respondeu com `stop_reason: end_turn` e as chamadas escritas no texto (`<tool_call>read<param_key>filePath...`), sem nenhum bloco `tool_use`. O filtro só repassa bytes; nada foi descartado no caminho;
+- o CLI cobrou o relatório três vezes (`handback-send-enforce`) e encerrou o agente sem relatório;
+- dois agentes router-coder anteriores, em paralelo, já tinham usado ferramentas pelo Xing4.0, mas terminaram em 429 e 504 disputando os mesmos modelos;
+- o classificador do auto mode chamou `nemotron-3.5-lightning:free[1m]` pelo filtro e expirou ("temporarily unavailable (timed out), so auto mode cannot determine the safety of Bash"); daí os "Not run";
+- o perfil router carregava `~/.claude/CLAUDE.md` como instrução de projeto, porque o CLI sobe de pasta em pasta a partir do projeto. As primeiras chamadas Agent com `model: sonnet` vieram dessas regras.
+
+Catálogo conferido ao vivo em 06/11: 11 modelos `:free`, todos com preço zero. Servidores: Google AI Studio (os dois Gemma), Cohere (North Mini Code), Nvidia (Lightning, Ultra, Super VL, Nano Omni), Phala (Xing4.0), AtlasCloud (Dots3-Note, expira em 31/12/2026) e Recursive (Flint, sem `tool_choice`).
+
+Mudanças:
+- router-coder: Gemma 4 31B → North Mini Code → Nemotron 3.5 Lightning → Xing4.0 29B A4B. Quatro provedores, Xing4.0 por último, nenhum modelo novo;
+- filtro: modelo que falha (429, 5xx, 504, sem evento) fica de lado por 300 s, ou pelo `Retry-After` entre 15 e 900 s; 504 passa ao próximo; a cadeia inteira tem teto de 420 s; `modelos-utilizados.json` é gravado a cada evento;
+- perfil router: `acceptEdits` em vez de `auto`, regras `npm`/`npx`, `claudeMdExcludes` com o `CLAUDE.md` do perfil original;
+- hook: nega `Skill` com nome `router-*`, nega leitura do AGENTS.md compartilhado do kit e nega um segundo agente cujos modelos coincidam com os de um agente em andamento;
+- ROUTER.md: mais curto, com exemplo literal de `Agent(subagent_type="router-coder", ...)` e a regra de conferir por Glob/Grep e reenviar uma vez quando o agente termina com 0 tool uses ou sem relatório.
+
+O efeito do `claudeMdExcludes` foi conferido com o CLI nativo 2.1.319 e um endpoint Anthropic simulado (sem geração real): numa pasta dentro do usuário, sem a regra, o `~/.claude/CLAUDE.md` vai no pedido; com a regra, não vai. A qualidade do North Mini Code e do Lightning como programadores só um teste com geração mostra.
+
