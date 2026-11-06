@@ -1,13 +1,26 @@
 """Ephemeral loopback filter. Calls only explicit OpenRouter free variants."""
 import http.client
 import json
+import math
+import re
 import secrets
+import socket
 import threading
 import time
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from urllib.parse import urlsplit
 from context_config import response_budget
 from core import KIT, ROLES, MODELS, get_catalog, safe_candidate, MODEL_NAMES, PRIMARY_ROLES
+
+# Statuses that mean "this model is unavailable now", never "this request is wrong".
+RESERVE_STATUSES = (404,408,429,500,502,503,529)
+# A rate-limited model is skipped for this long (Retry-After when the provider sends one).
+COOLDOWN_SECONDS = (15, 60, 300)  # minimum, default, maximum
+# OmniRoute answers a slow stream with HTTP 200 and keepalive pings while it cycles accounts.
+# Wait at most this long for the first real event: base, plus 1 s per 16 KB of request, capped.
+FIRST_EVENT_SECONDS = (60, 300)
+FIRST_EVENT_BYTES_PER_SECOND = 16384
+PRECOMMIT_LIMIT = 1024*1024
 
 class Gateway(ThreadingHTTPServer):
     daemon_threads = True
@@ -29,6 +42,23 @@ class Gateway(ThreadingHTTPServer):
         self.active = 0
         self.lock = threading.Lock()
         self.events = []
+        self.cooldown_seconds = COOLDOWN_SECONDS
+        self.first_event_seconds = FIRST_EVENT_SECONDS
+        self.cooling = {}
+
+    def cool(self, model, seconds=None):
+        low, default, high = self.cooldown_seconds
+        seconds = default if seconds is None else max(low, min(high, seconds))
+        with self.lock:
+            self.cooling[model] = max(self.cooling.get(model, 0), time.monotonic() + seconds)
+
+    def cooling_left(self, model):
+        with self.lock:
+            return max(0.0, self.cooling.get(model, 0) - time.monotonic())
+
+    def first_event_timeout(self, size):
+        base, ceiling = self.first_event_seconds
+        return min(ceiling, base + size / FIRST_EVENT_BYTES_PER_SECOND)
 
     def fresh_catalog(self):
         if time.monotonic() - self.catalog_time > 300:
@@ -117,10 +147,17 @@ class Handler(BaseHTTPRequestHandler):
             # Hosted search tools can incur separate charges; keep ordinary function tools.
             if 'tools' in body:
                 body['tools'] = [tool for tool in body['tools'] if tool.get('type','custom') == 'custom']
+            # A model that just hit its rate limit is skipped instead of cycling through it again.
+            available = [m for m in candidates if not self.server.cooling_left(m)]
+            if not available:
+                wait = math.ceil(min(self.server.cooling_left(m) for m in candidates))
+                self.record(role,candidates[0],'blocked-cooling',429)
+                return self.send_unavailable(429, role, candidates, 'limite de requisicoes no provedor gratuito', wait)
             with self.server.lock:
                 self.server.active += 1
             try:
-                for index, model in enumerate(candidates):
+                for index, model in enumerate(available):
+                    last = index + 1 == len(available)
                     body['model'] = ('openrouter/' if self.server.transport == 'omniroute' else '') + model
                     payload = json.dumps(body).encode()
                     cls = http.client.HTTPSConnection if self.server.upstream.scheme == 'https' else http.client.HTTPConnection
@@ -133,6 +170,7 @@ class Handler(BaseHTTPRequestHandler):
                             headers[key] = self.headers[key]
                     try:
                         connection.request('POST',path if self.server.transport == 'omniroute' else '/api'+path,payload,headers)
+                        upstream_socket = connection.sock
                         response = connection.getresponse()
                     except (OSError, http.client.HTTPException):
                         connection.close()
@@ -145,13 +183,41 @@ class Handler(BaseHTTPRequestHandler):
                         # A model-specific harness eligibility refusal is unavailability,
                         # not invalid credentials. Other 403s never trigger reserve.
                         restricted_model = b'only available on agentic harnesses' in buffered and model.encode() in buffered
-                    if (response.status in (404,408,429,500,502,503,529) or restricted_model) and index + 1 < len(candidates):
+                    if response.status == 429:
+                        self.server.cool(model, retry_after(response.getheader('Retry-After')))
+                    if (response.status in RESERVE_STATUSES or restricted_model) and not last:
                         if buffered is None:
                             response.read()
                         connection.close()
                         self.record(role,model,'reserve-next',response.status)
-                        print('[clauderouter] '+role+': principal indisponivel (HTTP '+str(response.status)+'); reserva '+candidates[index+1],flush=True)
+                        print('[clauderouter] '+role+': principal indisponivel (HTTP '+str(response.status)+'); reserva '+available[index+1],flush=True)
                         continue
+                    if (response.status == 200 and path == '/v1/messages'
+                            and 'text/event-stream' in (response.getheader('Content-Type') or '').lower()):
+                        # Nothing reaches the client until the first real event, so a failure
+                        # reported inside the stream can still move to the reserve without
+                        # replaying anything the client has seen.
+                        deadline = time.monotonic() + self.server.first_event_timeout(len(payload))
+                        outcome, buffered, failure = first_event(response, upstream_socket, model, deadline)
+                        if outcome == 'reset':
+                            connection.close()
+                            return self.send_json(502, {'error':{'type':'api_error','message':'Upstream transport failure; no automatic replay'}})
+                        if outcome in ('failure', 'timeout'):
+                            connection.close()  # Ends the upstream attempt; OmniRoute stops its pings.
+                            status, wait, rate_limited = failure if outcome == 'failure' else (504, None, True)
+                            if rate_limited:
+                                self.server.cool(model, wait)
+                            self.record(role,model,'reserve-next' if not last else 'blocked',status)
+                            if not last:
+                                reason = 'sem primeiro evento no prazo' if outcome == 'timeout' else 'HTTP '+str(status)+' no stream'
+                                print('[clauderouter] '+role+': principal indisponivel ('+reason+'); reserva '+available[index+1],flush=True)
+                                continue
+                            if outcome == 'timeout':
+                                return self.send_unavailable(504, role, available, 'sem resposta dentro do prazo', self.server.cooldown_seconds[1])
+                            if status == 429:
+                                return self.send_unavailable(429, role, available, 'limite de requisicoes no provedor gratuito', math.ceil(self.server.cooling_left(model)) or None)
+                            return self.send_unavailable(status, role, available, 'indisponivel no provedor', None)
+                        upstream_socket.settimeout(180)
                     selected = response.getheader('X-OmniRoute-Selected-Connection-Id')
                     self.record(role,model,'response',response.status,selected)
                     self.send_response(response.status)
@@ -162,12 +228,12 @@ class Handler(BaseHTTPRequestHandler):
                     self.send_header('Connection','close')
                     self.end_headers()
                     try:
-                        if buffered is not None:
+                        if buffered:
                             self.wfile.write(buffered)
-                        else:
-                            while data := response.read1(65536):
-                                self.wfile.write(data)
-                                self.wfile.flush()
+                            self.wfile.flush()
+                        while data := response.read1(65536):
+                            self.wfile.write(data)
+                            self.wfile.flush()
                     finally:
                         connection.close()
                     return
@@ -182,12 +248,112 @@ class Handler(BaseHTTPRequestHandler):
                 except OSError:
                     pass
 
+    def send_unavailable(self, status, role, models, reason, wait):
+        # Tell the caller to stop: the agent reports the blocked route instead of retrying it.
+        names = ' e '.join(MODEL_NAMES.get(m, m) for m in models)
+        message = 'Rota '+role+' indisponivel ('+reason+'): '+names+'. Nenhum outro modelo sera tentado; informe o usuario.'
+        if wait:
+            message += ' Nova tentativa possivel em '+str(wait)+' s.'
+        data = json.dumps({'type':'error','error':{'type':'rate_limit_error' if status == 429 else 'api_error','message':message}}).encode()
+        self.send_response(status)
+        self.send_header('Content-Type','application/json')
+        self.send_header('Content-Length',str(len(data)))
+        self.send_header('x-should-retry','false')
+        if wait:
+            self.send_header('Retry-After',str(wait))
+        self.end_headers()
+        self.wfile.write(data)
+
     def record(self, role, model, outcome, status, connection_id=None):
         event = {'time':time.time(),'role':role,'model':model,'outcome':outcome,'status':status}
         if connection_id:
             event['connection_id'] = connection_id
         with self.server.lock:
             self.server.events.append(event)
+
+def retry_after(value):
+    try:
+        return int(str(value).strip())
+    except (TypeError, ValueError):
+        return None
+
+def first_event(response, upstream_socket, model, deadline):
+    """Read SSE until the first event that is not a keepalive.
+
+    Returns ('commit', bytes, None) to stream on, ('failure', bytes, (status, wait, rate_limited))
+    for an unavailability error, ('timeout', None, None) or ('reset', None, None).
+    """
+    buffered = bytearray()
+    block = []
+    while True:
+        remaining = deadline - time.monotonic()
+        if remaining <= 0:
+            return 'timeout', None, None
+        try:
+            upstream_socket.settimeout(min(remaining, 180))
+            line = response.readline(65536)
+        except socket.timeout:
+            return 'timeout', None, None
+        except (OSError, http.client.HTTPException):
+            return 'reset', None, None
+        if not line:
+            return 'commit', bytes(buffered), None
+        buffered += line
+        text = line.decode('utf-8', 'replace').rstrip('\r\n')
+        if text:
+            block.append(text)
+            if len(buffered) > PRECOMMIT_LIMIT:
+                return 'commit', bytes(buffered), None
+            continue
+        if not block:
+            continue
+        event = next((l[6:].strip() for l in block if l.startswith('event:')), '')
+        data = '\n'.join(l[5:].strip() for l in block if l.startswith('data:'))
+        block = []
+        if event == 'ping' or not (event or data):
+            continue  # OmniRoute keepalive or SSE comment.
+        if event == 'error' or is_error_data(data):
+            failure = stream_failure(data, model)
+            return ('failure', bytes(buffered), failure) if failure else ('commit', bytes(buffered), None)
+        return 'commit', bytes(buffered), None
+
+def is_error_data(data):
+    try:
+        value = json.loads(data)
+    except ValueError:
+        return False
+    return isinstance(value, dict) and (value.get('type') == 'error' or 'error' in value)
+
+def stream_failure(data, model):
+    """Classify an error sent inside a 200 stream. None means: not unavailability, no reserve."""
+    try:
+        value = json.loads(data)
+    except ValueError:
+        value = data
+    error = value.get('error', value) if isinstance(value, dict) else value
+    kind = code = ''
+    status = wait = None
+    if isinstance(error, dict):
+        kind = str(error.get('type', '')).lower()
+        code = str(error.get('code', '')).lower()
+        status = next((v for v in (error.get('status_code'), error.get('status'), error.get('code')) if isinstance(v, int) and not isinstance(v, bool)), None)
+        wait = retry_after(error.get('retry_after_seconds', value.get('retry_after_seconds') if isinstance(value, dict) else None))
+    text = (json.dumps(error, ensure_ascii=False) if not isinstance(error, str) else error).lower()
+    if 'only available on agentic harnesses' in text and model.lower() in text:
+        return 403, None, False
+    if kind in ('authentication_error', 'permission_error', 'billing_error') or status in (400, 401, 402, 403, 413):
+        return None
+    if 'rate_limit' in kind or 'rate_limit' in code or status == 429 or re.search(r'rate.?limit|too many requests|\b429\b|quota', text):
+        return 429, wait, True
+    if kind == 'overloaded_error' or status == 529 or 'overloaded' in text:
+        return 529, wait, False
+    if kind == 'invalid_request_error' and status != 404 and 'not_found' not in code:
+        return None
+    if status in RESERVE_STATUSES:
+        return status, wait, False
+    if kind in ('server_error', 'api_error', 'stream_error', 'timeout_error', 'not_found_error') or 'not_found' in code:
+        return 503, wait, False
+    return None
 
 def contains_image(value):
     if isinstance(value,dict):

@@ -108,3 +108,29 @@ Duplas resultantes:
 - assistant: Gemma 4 26B A4B (Google) → North Mini Code (Cohere).
 
 Pôr o Xing4.0 como coordenador quebraria a janela de 1M, porque ele publica 262144. Por isso a dupla do coordenador ficou com um único provedor. Nenhuma geração foi feita nesta validação; a qualidade dos modelos novos depende de testes reais.
+
+## Reserva em limite de requisições dentro do stream (06/11/2026)
+
+No teste real do router, o router-coder ficou mais de 4 minutos preso. O Gemma 4 31B gratuito recebeu 429 do provedor em todas as contas do OmniRoute e a reserva Xing4.0 nunca foi tentada. O filtro já tratava HTTP 429 como falha elegível. O defeito estava em outro ponto: o OmniRoute 3.8.51 (`withEarlyStreamKeepalive`) responde HTTP 200 `text/event-stream` quando a resposta interna demora mais de 1 s. Em seguida manda `event: ping` a cada 1,5 s enquanto troca de conta, com prazo interno de 33 minutos, e só no fim põe o 429 dentro do stream como `event: error`. O filtro via o 200 e repassava o stream. Os eventos da execução registram as duas chamadas do router-coder como `response 200`.
+
+Agora o filtro lê o stream sem entregar nada ao Claude Code até o primeiro evento que não seja keepalive:
+- `event: error` de limite de requisições, sobrecarga ou indisponibilidade do provedor passa para a reserva aprovada da função, já filtrada por preço zero, `tools` e imagem;
+- autenticação, permissão, pagamento e pedido inválido seguem para o cliente como antes, sem reserva;
+- qualquer conteúdo (`message_start`) encerra a decisão, e depois disso nada é repetido;
+- sem primeiro evento no prazo (60 s + 1 s por 16 KB do pedido, até 300 s), a tentativa é encerrada e conta como indisponibilidade;
+- o modelo com 429 ou prazo vencido fica em espera (60 s, ou `Retry-After` entre 15 e 300 s) e é pulado;
+- com principal e reserva indisponíveis, o filtro responde 429 ou 504 com `x-should-retry: false`, `Retry-After` e a mensagem "Rota <função> indisponivel (...)". O ROUTER.md manda o agente parar e avisar.
+
+`tests/test_gateway_reserve.py` usa um OmniRoute simulado com o mesmo formato (200, pings e erro no stream). Cobre:
+- 429 no stream com a reserva respondendo;
+- HTTP 429 com a principal pulada durante a espera;
+- 429 nas duas, com resposta imediata e sem chamada nova na segunda tentativa;
+- principal travada em pings, abandonada no prazo;
+- as duas travadas, com 504;
+- pedido com imagem que não cai no Xing4.0 (sem imagem), enquanto o visual usa a reserva Gemma 4 31B;
+- erro de autenticação no stream sem reserva;
+- erro depois de conteúdo sem repetição;
+- volta da principal após a espera;
+- a classificação dos erros.
+
+Contra o filtro antigo, 8 dos 9 testes de rota falham.

@@ -21,7 +21,7 @@ Esta regra e imposta pelo hook do perfil, nao e so recomendacao:
 - Se o hook negar, NAO tente outra forma de escrever o mesmo arquivo. Delegue.
 
 Falhas de rota e comandos que alteram dependencias:
-- Se um agente de funcao falhar com 503, "No verified free compatible model" ou outra indisponibilidade, NAO passe o trabalho a outro especialista nem faca voce mesmo. Pare, informe ao usuario qual rota falhou (agente e mensagem) e espere a decisao dele.
+- Se um agente de funcao falhar com 503, 429, 504, "No verified free compatible model", "Rota ... indisponivel" ou outra indisponibilidade (o gateway ja tentou a reserva aprovada), NAO passe o trabalho a outro especialista nem faca voce mesmo. Pare, informe ao usuario qual rota falhou (agente e mensagem) e espere a decisao dele.
 - Apenas um agente por vez roda npm install, npm ci, build ou qualquer comando que altere node_modules ou o lockfile na mesma pasta. Espere o anterior terminar antes de iniciar outro; nao rode esses comandos em paralelo com um agente que os esteja executando.
 - Nunca troque a versao de framework ou biblioteca pedida pelo usuario (por exemplo, Next 15 nao vira 16; React 19 nao vira 18). Se a versao pedida nao instalar ou nao compilar, pare e informe o erro.
 

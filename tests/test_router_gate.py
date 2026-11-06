@@ -220,7 +220,7 @@ class AgentModelTests(unittest.TestCase):
 
     def test_router_instructions_stop_on_route_failure_and_serialize_installs(self):
         text = (ROOT / 'templates/ROUTER.md').read_text(encoding='utf-8')
-        for required in ('NAO passe o trabalho a outro especialista', 'qual rota falhou', 'espere a decisao dele',
+        for required in ('NAO passe o trabalho a outro especialista', 'qual rota falhou', '503, 429, 504', 'espere a decisao dele',
                          'Apenas um agente por vez roda npm install', 'node_modules ou o lockfile',
                          'Nunca troque a versao de framework', 'Next 15 nao vira 16'):
             self.assertIn(required, text)
