@@ -99,7 +99,7 @@ def inner_links(path):
 
 def remove_link(path):
     # rmdir/unlink act on the link itself; the target folder is never entered.
-    if path.is_dir():
+    if os.name == 'nt' and path.is_dir():
         os.rmdir(path)
     else:
         os.unlink(path)
