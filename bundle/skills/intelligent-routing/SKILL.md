@@ -47,6 +47,7 @@ graph TD
 | **Performance**     | "slow", "optimize", "performance", "speed" | `performance-optimizer`                     | ✅ YES       |
 | **Product Def**     | "requirements", "user story", "backlog", "MVP" | `product-owner`                             | ✅ YES       |
 | **Writing / Copy**  | "texto", "copy", "headline", "post", "email", "humanizar", "AI-isms" | skill `avoid-ai-writing` (+ `seo-specialist` if it is page content) | ✅ YES       |
+| **Web Scraping**    | "scrape", "crawl", "raspar", "extrair dados do site", "spider", "Cloudflare" | skill `scrapling` (+ `backend-specialist` if it becomes a service) | ✅ YES       |
 | **New Feature**     | "build", "create", "implement", "new app"  | `orchestrator` → multi-agent                | ⚠️ ASK FIRST |
 | **Complex Task**    | Multiple domains detected                  | `orchestrator` → multi-agent                | ⚠️ ASK FIRST |
 

@@ -1,5 +1,7 @@
 # Validação — 18/10/2026
 
+> **Histórico.** O perfil router, o `clauderouter`, o filtro de modelos gratuitos, o OmniRoute e o supervisor do `claude` foram retirados em 06/11/2026 (última seção). As seções anteriores registram como essas partes foram validadas enquanto existiam; os comandos e arquivos citados nelas não fazem mais parte do kit.
+
 ## Preparação local inicial
 
 - Windows: 20 testes do repositório passaram, incluindo instalação em usuário temporário, reinstalação, reversão, preservação de arquivos não relacionados, proteção contra destinos externos, configuração persistente do OmniRoute e roteamento pelos IDs originais.
@@ -134,3 +136,28 @@ Agora o filtro lê o stream sem entregar nada ao Claude Code até o primeiro eve
 - a classificação dos erros.
 
 Contra o filtro antigo, 8 dos 9 testes de rota falham.
+
+## Remoção do router (06/11/2026)
+
+Decisão do proprietário: o kit deixa de usar o clauderouter e o OmniRoute. O perfil original continua com as mesmas regras.
+
+- **Saiu do repositório:** `runtime/gateway.py`, `router_gate.py`, `omniroute_pool.py`, `omniroute_bridge.mjs`, `replace_key.py`, `context_config.py`, `launcher.py`, `hook.py`, `quota_watch.py` e `test_profiles.py`; `models.json`; `scripts/configure_omniroute.py`; `templates/ROUTER.md` e `templates/router-agents/`; os testes do filtro, do gate, do OmniRoute, dos modelos, do contexto e da cota.
+- **`core.py`** ficou só com o que o instalador e o rollback usam.
+- **Instalador:**
+  - não cria mais o perfil router, o `clauderouter`, o `launcherin` nem a chave do OmniRoute;
+  - `install.ps1` e `install.sh` não instalam nem configuram o OmniRoute e não exigem Node;
+  - o instalador tira do `settings.json` só as linhas de hook que apontam para `launcher/runtime/hook.py` e põe `~/.local/bin` no início do PATH, no lugar do `launcherin`, com journal.
+- **`scripts/remove_router.py`** (novo): lista (`--dry-run`), move para a quarentena com journal (`--aplicar`) e devolve (`--restaurar`).
+  - Recusa enquanto houver sessão do launcher aberta, hook do launcher no `settings.json` ou `launcherin` no PATH.
+  - Tira junctions como link.
+  - Não toca em `~/.omniroute` nem nas chaves.
+- **Ficou:** o bundle, `templates/CLAUDE.md` (Haiku, Sonnet, Opus, Fable sob pedido, níveis 0 a 5) sem o parágrafo do aviso de 95%, a lógica de `availableModels` e dos overrides do original, `rollback.py` e a auditoria.
+
+**Testes:** 13 em `tests/` (8 do instalador e 5 do `remove_router.py`, com junction real no Windows), auditoria pública `passed`, `install.py --dry-run` sem escrita.
+
+**Reinstalação no Windows (06/11/2026), sem chamada de modelo além de uma checagem:**
+- `install.ps1 -DryRun` e `install.ps1` terminaram com código 0.
+- No `~/.claude/settings.json`, a única mudança foi a saída dos 9 hooks do supervisor (137 linhas a menos, nenhuma a mais). `model`, `availableModels`, `env`, permissões, plugins e `modelSettings` ficaram iguais.
+- `~/.local/bin` entrou no início do PATH do usuário e `launcher\bin` saiu, com o valor anterior no journal.
+- Num processo novo, `claude` resolve para o nativo 2.1.319. `claude auth status` mostra login claude.ai. Um `claude -p` com Haiku respondeu sem erro.
+- `remove_router.py --dry-run` listou os itens e recusou `--aplicar` por causa das sessões abertas pelo launcher.

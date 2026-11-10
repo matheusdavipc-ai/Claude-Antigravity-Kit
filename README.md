@@ -1,12 +1,12 @@
 # Claude + Antigravity — kit global
 
-Instalação pessoal para Windows e macOS, com skills, agentes, workflows, Claude Code nativo, dois perfis e OmniRoute. Não contém contas, chaves, histórico nem configurações de clientes. O clone é a fonte de instalação; depois de instalar, os comandos globais não dependem da pasta do repositório.
+Instalação pessoal para Windows e macOS: skills, agentes e workflows compartilhados entre o Claude Code nativo e o Antigravity, mais as regras de orquestração do Claude Code. Não contém contas, chaves, histórico nem configurações de clientes. O clone é a fonte de instalação; depois de instalar, nada depende da pasta do repositório.
 
-**Acesso rápido:** [prompt Windows](#prompt-de-instalação--windows) · [prompt macOS](#prompt-de-instalação--macos) · [catálogo de uso de todos os recursos](docs/CATALOGO.md) · [instalação manual](#instalar-no-windows).
+**Acesso rápido:** [prompt Windows](#prompt-de-instalação--windows) · [prompt macOS](#prompt-de-instalação--macos) · [catálogo de uso de todos os recursos](docs/CATALOGO.md) · [instalação manual](#instalar-no-windows) · [remover o router de uma instalação antiga](#remover-o-router-de-uma-instalação-antiga).
 
 ## Instalar pedindo a uma IA
 
-Escolha **somente o prompt do seu sistema** e copie o bloco inteiro para o Claude Code, Antigravity ou outra IA com acesso ao terminal e aos arquivos do computador. Ela poderá instalar e verificar o kit; você conclui os logins e digita sua própria chave OpenRouter localmente. Assinaturas e cotas não acompanham o repositório.
+Escolha **somente o prompt do seu sistema** e copie o bloco inteiro para o Claude Code, Antigravity ou outra IA com acesso ao terminal e aos arquivos do computador. Ela instala e verifica o kit; você faz o login da assinatura Anthropic. Assinaturas e cotas não acompanham o repositório.
 
 ### Prompt de instalação — Windows
 
@@ -16,31 +16,21 @@ Instale globalmente o Claude-Antigravity-Kit neste computador Windows. Estou aut
 Repositório: https://github.com/matheusdavipc-ai/Claude-Antigravity-Kit.git
 Clone-o em uma pasta do meu usuário, ou reutilize um clone existente depois de conferir origem e alterações locais. Não sobrescreva trabalho existente.
 
-Verifique Git for Windows, Python 3.12+, Node.js LTS 22.19+ e Claude Code nativo 2.1.292+. Na pasta do clone, execute primeiro:
+Verifique Git for Windows, Python 3.12+ e Claude Code nativo 2.1.292+. Na pasta do clone, execute primeiro:
 powershell -NoProfile -ExecutionPolicy Bypass -File .\install.ps1 -DryRun
 Depois, execute:
-powershell -NoProfile -ExecutionPolicy Bypass -File .\install.ps1 -SkipKey
-O instalador instala Claude nativo e OmniRoute se ausentes. Verifique a versão do Claude existente antes de prosseguir. Não execute tudo como administrador nem desative proteções globalmente.
+powershell -NoProfile -ExecutionPolicy Bypass -File .\install.ps1
+O instalador instala o Claude nativo se ele estiver ausente. Verifique a versão do Claude existente antes de prosseguir. Não execute tudo como administrador nem desative proteções globalmente.
 
-Use %USERPROFILE%\.claude, %USERPROFILE%\.claude\profiles\router e %USERPROFILE%\.claude\launcher para os perfis e suporte; compartilhe o bundle em %USERPROFILE%\.gemini\config. Minha chave OpenRouter deve ser cadastrada por mim no painel local do OmniRoute, na conexão main1. Nunca solicite a chave no chat nem a coloque em argumentos, logs ou prints. Depois execute omniroute_pool.py do runtime instalado: ele cria uma chave local restrita aos sete modelos e a protege com DPAPI. -SkipKey adia essa configuração até o servidor e a conta estarem prontos. Ajude no login Anthropic pelo fluxo nativo, sem copiar credenciais. Reabra o terminal e confira o PATH e os dois comandos.
+Use %USERPROFILE%\.claude para a configuração do Claude Code e %USERPROFILE%\.claude\launcher para o registro da instalação e os backups; compartilhe o bundle em %USERPROFILE%\.gemini\config. O comando claude deve abrir o Claude Code nativo de %USERPROFILE%\.local\bin. Ajude no login Anthropic pelo fluxo nativo (/login), sem copiar credenciais. Reabra o terminal e confira o PATH e o comando claude.
 
-Leia README.md, AGENTS.md, models.json e docs/CATALOGO.md antes de alterar arquivos. Primeiro faça a auditoria e o dry-run; depois execute a instalação e as verificações. Preserve configurações existentes, use os backups e a reversão do instalador e não copie perfis privados para o clone. Instale dependências ausentes por fontes oficiais, sem usar runtimes embutidos em outros aplicativos.
+Leia README.md, AGENTS.md e docs/CATALOGO.md antes de alterar arquivos. Primeiro faça a auditoria e o dry-run; depois execute a instalação e as verificações. Preserve configurações existentes, use os backups e a reversão do instalador e não copie perfis privados para o clone. Instale dependências ausentes por fontes oficiais, sem usar runtimes embutidos em outros aplicativos.
 
-Configure claude para a assinatura Anthropic original e clauderouter para OpenRouter, em perfis separados. A instalação global deve funcionar sem depender da pasta clonada. Instale todas as skills, agentes e workflows do bundle; use /workflow-* para evitar conflitos com comandos nativos. Memória pessoal permanece desativada.
+Instale todas as skills, agentes e workflows do bundle; use /workflow-* para evitar conflitos com comandos nativos. Mantenha a política do CLAUDE.md: Haiku para leitura, Sonnet e Opus para o trabalho, com esforço por nível, e Fable só sob pedido. Memória pessoal permanece desativada.
 
-Respeite exatamente as funções e duplas de models.json:
-- Orquestrador: Nemotron 3.5 Lightning → Nemotron 3 Ultra.
-- Programador principal: Gemma 4 31B → Xing4.0 29B A4B.
-- Especialista visual: Nemotron 3.5 Super VL → Gemma 4 31B.
-- Executor rápido: North Mini Code → Gemma 4 26B A4B.
-- Programador auxiliar: Gemma 4 26B A4B → North Mini Code.
-São sete modelos distintos em dez posições. Preserve os nomes originais e descrições de função em /model, os limites de contexto por modelo e as regras de compactação. Não acrescente modelos pagos ou terceiros. Revalide metadados e informe restrições, expiração ou indisponibilidade; não invente substitutos.
+Se houver uma instalação antiga com o perfil router (comando clauderouter), rode python scripts\remove_router.py --dry-run e me mostre a lista. Só rode --aplicar com a minha autorização, num PowerShell fora do Claude e com todas as sessões fechadas.
 
-Mantenha as políticas de orquestração separadas: Haiku (leitura), Sonnet, Opus e esforço no claude original, com Fable só sob pedido; os cinco agentes próprios e as duplas acima no router. Preserve a troca automática por esgotamento reconhecido e o preparo preventivo em 95% da assinatura Anthropic, somente após checkpoint e em estado ocioso verificado sem processos auxiliares; o retorno é manual. Entre contas OpenRouter, mantenha a mesma sessão sem checkpoint em 95%.
-
-Configure o OmniRoute em ~/.omniroute/.env, escutando em 127.0.0.1:20128, preservando chaves de criptografia existentes. O fluxo obrigatório é clauderouter → filtro de modelos gratuitos → OmniRoute → OpenRouter. O original continua direto na Anthropic. OmniRoute deve estar pronto antes da troca automática para o router. Antes de iniciar, verifique http://127.0.0.1:20128/api/health e confirme que a porta pertence ao OmniRoute. Se ele já estiver saudável, reutilize a instância e execute omniroute dashboard para abrir o painel; não inicie outro servidor. Se estiver parado e a porta estiver livre, inicie omniroute serve --no-open. Se a porta pertencer a outro programa ou a saúde falhar, investigue sem encerrar processos automaticamente. Ajude no primeiro acesso e na conexão OpenRouter pelo dashboard http://127.0.0.1:20128/dashboard/providers/openrouter. Cadastre main1 com prioridade 1; outras contas que eu já possuir seguem main2, main3 etc., com prioridade numérica correspondente. Suporte 10–15 contas ou mais, sem criá-las automaticamente. Não invente nem crie contas. Execute python ~/.claude/launcher/runtime/omniroute_pool.py com o Python instalado. Esse comando usa o cliente oficial do OmniRoute para configurar fill-first somente no OpenRouter e uma chave local protegida e restrita aos sete modelos. A seleção de contas fica com OmniRoute, antes das reservas de modelo. Use autenticação legítima; não altere o banco diretamente. Não crie início automático do sistema.
-
-Execute a auditoria pública, os testes do repositório e do runtime, o diagnóstico nativo sem geração, a listagem clauderouter --listar-modelos e a verificação de isolamento dos perfis. Se iniciar OmniRoute, confira saúde HTTP, escuta local e avisos. Distinga testes simulados, login real e disponibilidade dos provedores. Peça autorização antes de testes de geração que consumam cota/créditos. Ao concluir os testes, encerre as instâncias temporárias de OmniRoute que você iniciou e confirme a liberação da porta, para que eu possa executar omniroute no meu terminal. Preserve instâncias que já existiam antes da instalação; informe se alguma permanecer ativa e como encerrá-la legitimamente.
+Execute a auditoria pública, os testes do repositório e claude --version. Distinga testes simulados de login real. Peça autorização antes de testes que consumam cota.
 
 Entregue os locais finais, comandos de uso, resultados, limitações e reversão. Se a cota, o contexto ou o tempo estiverem acabando, salve CONTINUIDADE.md sem segredos: objetivo, arquivos alterados, backups, etapas e testes concluídos, pendências, operações incertas e próxima ação. Não declare concluído o que não foi verificado.
 ```
@@ -53,31 +43,21 @@ Instale globalmente o Claude-Antigravity-Kit neste Mac. Estou autorizando a inst
 Repositório: https://github.com/matheusdavipc-ai/Claude-Antigravity-Kit.git
 Clone-o em uma pasta do meu usuário, ou reutilize um clone existente depois de conferir origem e alterações locais. Não sobrescreva trabalho existente.
 
-Verifique Git, Python 3.12+, Node.js LTS 22.19+ e Claude Code nativo 2.1.292+. Use Homebrew se já estiver disponível ou os instaladores oficiais. Não instale Homebrew silenciosamente nem recorra a sudo para corrigir permissões de npm. Na pasta do clone, execute primeiro:
+Verifique Git, Python 3.12+ e Claude Code nativo 2.1.292+. Use Homebrew se já estiver disponível ou os instaladores oficiais. Não instale Homebrew silenciosamente nem use sudo para corrigir permissões. Na pasta do clone, execute primeiro:
 bash install.sh --dry-run
 Depois, execute:
-bash install.sh --skip-key
-O instalador instala Claude nativo e OmniRoute se ausentes. Verifique a versão do Claude existente antes de prosseguir. Se python3 não apontar para Python 3.12+, selecione o executável correto por CLAUDE_KIT_PYTHON.
+bash install.sh
+O instalador instala o Claude nativo se ele estiver ausente. Verifique a versão do Claude existente antes de prosseguir. Se python3 não apontar para Python 3.12+, selecione o executável correto por CLAUDE_KIT_PYTHON.
 
-Use ~/.claude, ~/.claude/profiles/router e ~/.claude/launcher para os perfis e suporte; compartilhe o bundle em ~/.gemini/config. Minha chave OpenRouter deve ser cadastrada por mim no painel local do OmniRoute, na conexão main1. Nunca solicite a chave no chat nem a coloque em argumentos, logs ou prints. Depois execute omniroute_pool.py do runtime instalado: ele cria uma chave local restrita aos sete modelos e a protege no Keychain. --skip-key adia essa configuração até o servidor e a conta estarem prontos. Eu concluo as autorizações legítimas do Keychain e o login Anthropic nativo. Não use credenciais de outro computador nem fallback em texto puro. Confira ~/.zshrc; se eu usar outra shell, adapte o PATH dela. Reabra o terminal e confira os dois comandos.
+Use ~/.claude para a configuração do Claude Code e ~/.claude/launcher para o registro da instalação e os backups; compartilhe o bundle em ~/.gemini/config. O comando claude deve abrir o Claude Code nativo de ~/.local/bin; o instalador coloca essa pasta no início do PATH em ~/.zshrc. Se eu usar outra shell, adapte o PATH dela. Ajude no login Anthropic pelo fluxo nativo (/login), sem copiar credenciais de outro computador. Reabra o terminal e confira o comando claude.
 
-Leia README.md, AGENTS.md, models.json e docs/CATALOGO.md antes de alterar arquivos. Primeiro faça a auditoria e o dry-run; depois execute a instalação e as verificações. Preserve configurações existentes, use os backups e a reversão do instalador e não copie perfis privados para o clone. Instale dependências ausentes por fontes oficiais, sem usar runtimes embutidos em outros aplicativos.
+Leia README.md, AGENTS.md e docs/CATALOGO.md antes de alterar arquivos. Primeiro faça a auditoria e o dry-run; depois execute a instalação e as verificações. Preserve configurações existentes, use os backups e a reversão do instalador e não copie perfis privados para o clone. Instale dependências ausentes por fontes oficiais, sem usar runtimes embutidos em outros aplicativos.
 
-Configure claude para a assinatura Anthropic original e clauderouter para OpenRouter, em perfis separados. A instalação global deve funcionar sem depender da pasta clonada. Instale todas as skills, agentes e workflows do bundle; use /workflow-* para evitar conflitos com comandos nativos. Memória pessoal permanece desativada.
+Instale todas as skills, agentes e workflows do bundle; use /workflow-* para evitar conflitos com comandos nativos. Mantenha a política do CLAUDE.md: Haiku para leitura, Sonnet e Opus para o trabalho, com esforço por nível, e Fable só sob pedido. Memória pessoal permanece desativada.
 
-Respeite exatamente as funções e duplas de models.json:
-- Orquestrador: Nemotron 3.5 Lightning → Nemotron 3 Ultra.
-- Programador principal: Gemma 4 31B → Xing4.0 29B A4B.
-- Especialista visual: Nemotron 3.5 Super VL → Gemma 4 31B.
-- Executor rápido: North Mini Code → Gemma 4 26B A4B.
-- Programador auxiliar: Gemma 4 26B A4B → North Mini Code.
-São sete modelos distintos em dez posições. Preserve os nomes originais e descrições de função em /model, os limites de contexto por modelo e as regras de compactação. Não acrescente modelos pagos ou terceiros. Revalide metadados e informe restrições, expiração ou indisponibilidade; não invente substitutos.
+Se houver uma instalação antiga com o perfil router (comando clauderouter), rode python3 scripts/remove_router.py --dry-run e me mostre a lista. Só rode --aplicar com a minha autorização, num terminal fora do Claude e com todas as sessões fechadas.
 
-Mantenha as políticas de orquestração separadas: Haiku (leitura), Sonnet, Opus e esforço no claude original, com Fable só sob pedido; os cinco agentes próprios e as duplas acima no router. Preserve a troca automática por esgotamento reconhecido e o preparo preventivo em 95% da assinatura Anthropic, somente após checkpoint e em estado ocioso verificado sem processos auxiliares; o retorno é manual. Entre contas OpenRouter, mantenha a mesma sessão sem checkpoint em 95%.
-
-Configure o OmniRoute em ~/.omniroute/.env, escutando em 127.0.0.1:20128, preservando chaves de criptografia existentes. O fluxo obrigatório é clauderouter → filtro de modelos gratuitos → OmniRoute → OpenRouter. O original continua direto na Anthropic. OmniRoute deve estar pronto antes da troca automática para o router. Antes de iniciar, verifique http://127.0.0.1:20128/api/health e confirme que a porta pertence ao OmniRoute. Se ele já estiver saudável, reutilize a instância e execute omniroute dashboard para abrir o painel; não inicie outro servidor. Se estiver parado e a porta estiver livre, inicie omniroute serve --no-open. Se a porta pertencer a outro programa ou a saúde falhar, investigue sem encerrar processos automaticamente. Ajude no primeiro acesso e na conexão OpenRouter pelo dashboard http://127.0.0.1:20128/dashboard/providers/openrouter. Cadastre main1 com prioridade 1; outras contas que eu já possuir seguem main2, main3 etc., com prioridade numérica correspondente. Suporte 10–15 contas ou mais, sem criá-las automaticamente. Não invente nem crie contas. Execute python ~/.claude/launcher/runtime/omniroute_pool.py com o Python instalado. Esse comando usa o cliente oficial do OmniRoute para configurar fill-first somente no OpenRouter e uma chave local protegida e restrita aos sete modelos. A seleção de contas fica com OmniRoute, antes das reservas de modelo. Use autenticação legítima; não altere o banco diretamente. Não crie início automático do sistema.
-
-Execute a auditoria pública, os testes do repositório e do runtime, o diagnóstico nativo sem geração, a listagem clauderouter --listar-modelos e a verificação de isolamento dos perfis. Se iniciar OmniRoute, confira saúde HTTP, escuta local e avisos. Distinga testes simulados, login real e disponibilidade dos provedores. Peça autorização antes de testes de geração que consumam cota/créditos. Ao concluir os testes, encerre as instâncias temporárias de OmniRoute que você iniciou e confirme a liberação da porta, para que eu possa executar omniroute no meu terminal. Preserve instâncias que já existiam antes da instalação; informe se alguma permanecer ativa e como encerrá-la legitimamente.
+Execute a auditoria pública, os testes do repositório e claude --version. Distinga testes simulados de login real. Peça autorização antes de testes que consumam cota.
 
 Entregue os locais finais, comandos de uso, resultados, limitações e reversão. Se a cota, o contexto ou o tempo estiverem acabando, salve CONTINUIDADE.md sem segredos: objetivo, arquivos alterados, backups, etapas e testes concluídos, pendências, operações incertas e próxima ação. Não declare concluído o que não foi verificado.
 ```
@@ -86,42 +66,37 @@ Prefere instalar pelo terminal? Veja [Windows](#instalar-no-windows) ou [macOS](
 
 ## O que é instalado
 
-- `claude`: perfil original em `~/.claude`, login da assinatura Anthropic, Opus 5.5 (padrão), Sonnet 5.5, Haiku 5.5 e Fable 5.1 com resolução nativa.
-- `clauderouter`: perfil independente em `~/.claude/profiles/router`, com a equipe gratuita abaixo.
-- Suporte dos comandos em `~/.claude/launcher`, compartilhamento em `~/.gemini/config/{skills,agents,global_workflows}`.
-- OmniRoute instalado por npm e configurado em `~/.omniroute/.env`, com acesso somente em `127.0.0.1:20128`.
+- `claude`: o Claude Code nativo de `~/.local/bin`, com o perfil em `~/.claude` e o login da assinatura Anthropic. O seletor `/model` lista Opus 5.5 (padrão quando nenhum modelo válido está salvo), Sonnet 5.5, Haiku 5.5 e Fable 5.1, com resolução nativa.
+- `~/.claude/CLAUDE.md`: um bloco gerenciado com a triagem de modelo e esforço, o roteamento para os 17 agentes e as regras de perguntas. O resto do arquivo é seu e não é alterado.
+- Skills, agentes e workflows em `~/.gemini/config/{skills,agents,global_workflows}`, expostos em `~/.claude/skills`, `~/.claude/agents` e `~/.claude/commands`.
+- `~/.claude/launcher`: só o registro da instalação (`installation.json`), os backups e o `runtime/rollback.py`. Nenhum processo fica entre você e o Claude Code.
 
-**Fluxo atual:** `claude → Anthropic`; ao esgotar a assinatura, `clauderouter → filtro gratuito → OmniRoute → OpenRouter`. O filtro preserva modelos, contexto e reservas; OmniRoute gerencia as contas OpenRouter com `fill-first` e prioridade (`main1` primeiro, `main2` depois). Não são usados combos genéricos que possam trocar a equipe obrigatória.
+No `~/.claude/settings.json`, o instalador mexe apenas em `model` (só quando ausente ou inválido), `availableModels`, `ANTHROPIC_DEFAULT_OPUS_MODEL` e `ANTHROPIC_DEFAULT_SONNET_MODEL`. Também remove sobreposições antigas que atrapalham a assinatura (`ANTHROPIC_BASE_URL`, chaves de API, Haiku remapeado para Sonnet e qualquer override de Fable). Permissões, plugins, tema e hooks seus ficam como estão.
 
-## Equipe obrigatória
+## Política de modelos
 
-| Função | Principal | Reserva |
-|---|---|---|
-| Orquestrador | Nemotron 3.5 Lightning | Nemotron 3 Ultra |
-| Programador principal | Gemma 4 31B | Xing4.0 29B A4B |
-| Especialista visual | Nemotron 3.5 Super VL | Gemma 4 31B |
-| Executor rápido | North Mini Code | Gemma 4 26B A4B |
-| Programador auxiliar | Gemma 4 26B A4B | North Mini Code |
+| Nível | Tarefas típicas | Modelo | Esforço |
+|---|---|---|---|
+| 0 | leitura, busca, resumo | haiku | low |
+| 1 | comando conhecido, ajuste trivial | sonnet | low |
+| 2 | mudança simples em um arquivo | sonnet | medium |
+| 3 | 2 a 4 arquivos seguindo um padrão | sonnet | high |
+| 4 | tarefa difícil, decisão de arquitetura, dados sensíveis | opus | high |
+| 5 | produção, migração real, auditoria de segurança | opus | xhigh |
 
-São **10 posições, 5 principais e 5 reservas, com 7 modelos distintos**. O seletor `/model` mostra os nomes originais dos sete modelos. `models.json` registra os IDs e as duplas. `router-*` são nomes internos de funções/agentes, não nomes de modelos.
-
-Escolher um modelo principal usa sua reserva por função em falhas elegíveis antes de começar a resposta. Escolher Nemotron 3 Ultra ou Xing4.0 29B A4B diretamente mantém esse modelo, sem inventar uma terceira alternativa. North Mini Code, Gemma 4 26B A4B e Gemma 4 31B também aparecem como reservas de outras funções: a função do agente determina essa relação.
-
-O filtro revalida preços, disponibilidade, suporte a ferramentas, imagens e expiração. Só aceita os sete IDs `:free`, bloqueia recursos pagos e nunca manda imagem a modelo sem suporte visual. Zero preço não significa capacidade ou cota ilimitada.
-
-**Troca de modelos em 05/11/2026:** as variantes gratuitas de Inkling, Inkling Small, Laguna S 2.1 e Laguna XS 2.1 saíram do catálogo do OpenRouter (Inkling e Inkling Small seguem só como modelos pagos; as Laguna não aparecem mais). Foram substituídas, nas mesmas posições, por Nemotron 3.5 Lightning, Gemma 4 31B, Xing4.0 29B A4B e Gemma 4 26B A4B. Os critérios foram: `:free` com preço zero, ferramentas, contexto de pelo menos 256k, resposta máxima publicada e imagem nas duas posições visuais. O coordenador continua com rota de 1M (Nemotron 3.5 Lightning e Nemotron 3 Ultra, ambos servidos pela Nvidia); nas outras duplas, principal e reserva ficam em provedores diferentes. O instalador não contorna restrições nem substitui os modelos por conta própria. Consulte o catálogo ao instalar; uma dupla pode ficar indisponível.
+Fable entra só quando você pede ou quando Opus em `xhigh` já falhou na mesma tarefa. Haiku nunca edita arquivos nem decide. A tabela completa e as regras de desempate estão no `templates/CLAUDE.md`.
 
 ## Instalar no Windows
 
-Pré-requisitos: Python **3.12+**, Node.js LTS **22.19+**, Git for Windows e acesso à internet. Instale-os pelos sites oficiais ou pelos gerenciadores oficiais do seu sistema. A IA pode verificar e instalar os ausentes antes de continuar. Não use o Python embutido em outro aplicativo.
+Pré-requisitos: Python **3.12+**, Git for Windows e acesso à internet. Instale-os pelos sites oficiais ou pelos gerenciadores oficiais do seu sistema. Não use o Python embutido em outro aplicativo.
 
-Na pasta clonada, voce tambem pode abrir INSTALAR.cmd. Pelo terminal:
+Na pasta clonada, você também pode abrir `INSTALAR.cmd`. Pelo terminal:
 
 ```powershell
-powershell -NoProfile -ExecutionPolicy Bypass -File .\install.ps1 -SkipKey
+powershell -NoProfile -ExecutionPolicy Bypass -File .\install.ps1
 ```
 
-O script instala o Claude nativo e o OmniRoute 3.8.51 se ausentes e aplica o kit. `-SkipKey` adia a conexão ao pool até você cadastrar as contas no OmniRoute. A chave local do kit é protegida com DPAPI; as chaves OpenRouter ficam no armazenamento do OmniRoute. Reabra o terminal para atualizar o PATH.
+O script instala o Claude nativo se estiver ausente e aplica o kit. Ele coloca `%USERPROFILE%\.local\bin` no início do PATH do usuário e tira de lá o `launcher\bin` de versões antigas. Reabra o terminal para o PATH novo valer.
 
 Para inspecionar o plano sem instalar:
 
@@ -131,100 +106,31 @@ python install.py --dry-run
 
 ## Instalar no macOS
 
-Pré-requisitos: Python **3.12+**, Node.js LTS **22.19+** e internet. Com Homebrew já instalado, você pode usar `brew install python@3.12 node@22 git`; siga as instruções do Homebrew para disponibilizar os executáveis no PATH. Também pode usar os instaladores oficiais. O kit não exige nem solicita privilégios de administrador por conta própria.
+Pré-requisitos: Python **3.12+** e internet. Com Homebrew já instalado, você pode usar `brew install python@3.12 git`; também pode usar os instaladores oficiais. O kit não pede privilégios de administrador.
 
 ```bash
-bash install.sh --skip-key
+bash install.sh
 ```
 
-O script instala o Claude nativo se necessario, o OmniRoute 3.8.51 se ausente e o kit global; preserva uma instalacao OmniRoute existente. O macOS guarda a chave local do kit no **Keychain**, com uma referência no perfil; as chaves OpenRouter ficam no armazenamento do OmniRoute. Autorize o acesso quando o sistema pedir. Não existe fallback para gravar a chave em texto puro. O PATH é configurado em `~/.zshrc`; reabra o terminal. Se usar outra shell, adicione `~/.claude/launcher/bin` ao início do PATH dela.
+O script instala o Claude nativo se necessário e aplica o kit. O PATH é configurado num bloco do `~/.zshrc` que põe `~/.local/bin` na frente; reabra o terminal. Se usar outra shell, adicione `~/.local/bin` ao início do PATH dela.
 
-## Concluir as contas em cada computador
+## Login
 
-1. Faça login da assinatura pelo Claude nativo: `~/.local/bin/claude` (no Windows, `~/.local/bin/claude.exe`), usando `/login`. Não transporte `.credentials.json` nem histórico entre máquinas por este repositório.
-2. Inicie OmniRoute com `omniroute` e aguarde ficar pronto. Se já houver uma instância saudável, use `omniroute dashboard` para abrir o painel.
-3. No [painel OpenRouter](http://127.0.0.1:20128/dashboard/providers/openrouter), conclua o login legítimo e cadastre sua chave na conexão **main1**, prioridade **1**. Cadastre **main2**, prioridade **2**, somente quando possuir outra conta/chave autorizada. Com apenas main1, não existe uma segunda cota para usar; outra chave da mesma conta pode compartilhar o mesmo limite.
-4. Execute `python ~/.claude/launcher/runtime/omniroute_pool.py` com o Python instalado. No PowerShell, use o caminho equivalente dentro de `$env:USERPROFILE`. O comando usa a API autenticada do cliente oficial OmniRoute; preserva outros provedores, configura `fill-first` no OpenRouter e cria uma chave local restrita aos sete modelos. A chave é protegida com DPAPI/Keychain; nenhum segredo é impresso. O backup das prioridades e estratégia anterior fica em `~/.claude/launcher/backups/omniroute-pool-*`.
-5. Abra `clauderouter`, use `/model` e confira os sete nomes. `clauderouter --listar-modelos` confere IDs e reservas sem geração. Sessões abertas antes da atualização precisam ser reabertas.
+Abra `claude` e use `/login` com a sua assinatura. Não transporte `.credentials.json` nem histórico entre máquinas por este repositório. `claude auth status` mostra o método de login sem exibir tokens.
 
-Nenhum serviço inicia automaticamente com o sistema. **OmniRoute precisa estar rodando para o clauderouter e para receber a transferência da assinatura.** Sem servidor pronto, o lançador informa como iniciá-lo; a continuidade preparada fica registrada. Ele não ignora o OmniRoute nem volta silenciosamente à chave direta. `-SkipKey`/`--skip-key` adiam a configuração do pool. `replace_key.py` é um alias de compatibilidade para essa configuração, não cadastra mais uma chave OpenRouter diretamente no router.
+## Remover o router de uma instalação antiga
 
-### Sequência de alternância
-
-1. O original usa sua assinatura Anthropic e a política Haiku (leitura), Sonnet e Opus; Fable só sob pedido.
-2. Um limite de assinatura reconhecido prepara a continuidade e abre o router quando o encerramento é seguro.
-3. No router, OmniRoute usa primeiro a conta OpenRouter ativa de prioridade 1 (`main1`). Ao reconhecer cota/limite e colocar essa conta em espera, tenta a próxima elegível (`main2`, prioridade 2), mantendo o modelo solicitado.
-4. O filtro só tenta a reserva de modelo após o OmniRoute devolver uma falha elegível (404, 408, 429, 500, 502, 503, 529). Quando o OmniRoute demora, ele já responde HTTP 200 com pings de keepalive e só depois manda o erro dentro do stream; o filtro segura a resposta até o primeiro evento real e trata um limite de requisições ou indisponibilidade nesse ponto como falha elegível. Não repete uma chamada após falha de transporte com resultado incerto nem depois que qualquer conteúdo chegou ao Claude Code. Erros de autenticação, permissão, pagamento ou pedido inválido nunca acionam a reserva.
-5. Cada tentativa espera no máximo 60 s pelo primeiro evento, mais 1 s a cada 16 KB do pedido, com teto de 300 s. Um modelo que respondeu 429 (ou não respondeu no prazo) fica em espera por 60 s, ou pelo `Retry-After`, entre 15 e 300 s, e é pulado nesse período. Se principal e reserva falharem, o filtro devolve 429 ou 504 com `x-should-retry: false` e uma mensagem com a rota e os modelos, para o agente parar e avisar em vez de repetir.
-6. Se todas as contas/modelos elegíveis estiverem indisponíveis, a chamada falha claramente; não há créditos ou contas inventados. O retorno à assinatura permanece manual. OmniRoute pode reutilizar uma conta quando sua espera/cota for liberada.
-
-Ao adicionar main2, mantenha a prioridade 2 e execute novamente `omniroute_pool.py` para conferir. O pool é consultado pelo OmniRoute durante o uso; não precisa copiar a chave dessa conta para o perfil Claude. Cotas compartilhadas, restrições do provedor e permissões continuam valendo.
-
-### O que o painel mostra
-
-A topologia representa conexões de **provedores**, não uma lista de terminais Claude abertos. O perfil router aparece como tráfego **OpenRouter** quando faz uma chamada pelo OmniRoute. O `claude` original continua direto na Anthropic e não precisa da conexão Claude OAuth do OmniRoute. Um token dessa conexão marcado como expirado requer reautenticação legítima no próprio painel; ativar o botão não renova o token e não comprova esgotamento de cota.
-
-## Abrir o OmniRoute
-
-**Servidor e painel são ações diferentes.** O comando `omniroute` sem argumentos equivale a iniciar o servidor. Se ele já estiver em execução, aparece `Port 20128 is already in use by PID ...`: uma segunda instância não pode usar a mesma porta. Confira a saúde e o processo antes de concluir que existe uma falha.
-
-| Situação | O que fazer no Windows ou macOS |
-|---|---|
-| OmniRoute já está saudável | Execute `omniroute dashboard` para abrir o painel da instância existente. |
-| OmniRoute está parado e a porta está livre | Execute `omniroute serve --no-open` e, em outro terminal, `omniroute dashboard`. Mantenha o terminal do servidor aberto. |
-| Porta ocupada, mas a saúde falha ou o processo não é OmniRoute | Investigue o processo que ocupa a porta. Não encerre um programa apenas pelo número da porta. |
-| Quer voltar a manter o servidor no seu terminal, mas existe uma instância em segundo plano | Quando não houver requisições ativas, execute `omniroute stop`, aguarde a liberação da porta e execute `omniroute` no seu terminal. |
-| Precisa reiniciar um OmniRoute identificado | Use `omniroute stop`, aguarde a liberação da porta e execute `omniroute serve --no-open`. Isso interrompe as requisições em andamento; faça quando não houver trabalho ativo. |
-
-Para conferir a saúde no **PowerShell**:
-
-```powershell
-Invoke-RestMethod http://127.0.0.1:20128/api/health
-Get-NetTCPConnection -LocalPort 20128 -State Listen
-```
-
-No **macOS**:
-
-```bash
-curl --fail --max-time 10 http://127.0.0.1:20128/api/health
-lsof -nP -iTCP:20128 -sTCP:LISTEN
-```
-
-A saúde deve retornar JSON com `status: "ok"`. A identificação do processo confirma se o serviço é realmente OmniRoute. Depois, abra o painel com:
+Até 06/11/2026 o kit também instalava um segundo perfil (`clauderouter`), um filtro local de modelos gratuitos, o OmniRoute e um supervisor que passava o `claude` por um script Python com 9 hooks. Tudo isso saiu. O instalador atual já tira os hooks do supervisor do `settings.json` e o `launcher\bin` do PATH, com backup e journal. Os arquivos que ficaram no disco saem com:
 
 ```text
-omniroute dashboard
+python scripts/remove_router.py --dry-run    (lista, não muda nada)
+python scripts/remove_router.py --aplicar    (move para a quarentena)
 ```
 
-Também é possível acessar diretamente <http://127.0.0.1:20128/dashboard/providers/openrouter>. O comando `dashboard` apenas abre o navegador; ele não inicia o servidor e retorna ao prompt ao terminar. Para manter o servidor executando no próprio terminal, use `omniroute` com a porta livre. Ele permanece ativo até você interrompê-lo com Ctrl+C. Abrir o painel de uma instância em segundo plano não transfere a execução dela para o terminal atual. Um painel acessível e uma saúde positiva validam o serviço local, mas não comprovam que a conexão OpenRouter está autenticada ou que todos os modelos estão disponíveis.
-
-A primeira inicialização pode levar alguns minutos. Em uma verificação Windows, o CLI informou cerca de 128 segundos até ficar pronto. Enquanto aparecer `Starting server...`, aguarde; não abra outra instância. O kit configura um prazo de prontidão de 180 segundos. Esse tempo é um resultado observado, não uma garantia para toda máquina.
-
-As mensagens `Loaded env from ...` informam de onde as configurações foram carregadas. Elas não são erros; o arquivo do pacote pode conter somente um comentário, enquanto as configurações persistentes ficam em `~/.omniroute/.env`. O kit não altera o comando npm nem cria um serviço de início automático. Uma instância iniciada anteriormente pode continuar ativa até ser encerrada.
-
-## Continuidade e orquestração
-
-O original mantém a triagem Haiku/Sonnet/Opus (Fable sob pedido) e os agentes especialistas do kit. O router usa os cinco agentes de função e a tabela obrigatória; omite `model` e `effort` na chamada Agent e usa o modelo definido no frontmatter. As políticas são separadas.
-
-Ao reconhecer esgotamento da assinatura, o lançador transfere o trabalho para o router **somente quando verifica que a sessão está ociosa e sem processos descendentes**. Não troca por qualquer 429, erro de login ou indisponibilidade de rede. Processos destacados e estado desconhecido bloqueiam encerramento forçado. A continuidade contém texto selecionado, com remoção de credenciais reconhecíveis, e não uma reprodução integral da sessão. O retorno à assinatura é manual. A mudança de provedor envia o contexto selecionado ao OpenRouter; use projetos compatíveis com as condições dos provedores gratuitos.
-
-No router, o hook impõe a delegação: na conversa principal, Edit/Write/MultiEdit/NotebookEdit só valem para CONTINUIDADE.md, HANDOFF.md e `.md` na raiz ou em `docs/`, e o shell não pode escrever arquivos de código (`>`, `>>`, `Set-Content`, `Out-File`, `sed -i`, `tee`, `writeFileSync`). Redirecionamentos para logs, `2>&1`, `/dev/null` e `NUL` continuam livres, assim como npm, npx, git e Playwright. Nenhum agente escreve fora da pasta do projeto ou de `additionalDirectories`. Para sites, o ROUTER.md exige o fluxo planejar → referência visual → router-coder com as skills de frontend → gate (build, CSS processado, screenshots desktop e mobile) → revisão do router-visual antes de concluir. Conteúdo ausente vira placeholder `[TEXTO A DEFINIR]`; instruções internas nunca entram no texto do site.
-
-### Preparação em 95% e várias contas
-
-No original, o lançador adiciona um monitor de cota somente à sessão supervisionada. Ele lê `rate_limits.five_hour` e `rate_limits.seven_day` da status line nativa, preservando a configuração global e encaminhando uma status line personalizada quando existente. **Uso de contexto não é uso de cota.** Dados ausentes, expirados, de outra sessão ou antigos não disparam a preparação.
-
-A partir de **95% de consumo informado**, um lembrete no próximo resultado de ferramenta ou fim do turno pede ao agente avaliar: concluir e verificar o que estiver praticamente pronto, ou aguardar trabalhos em segundo plano e escrever `HANDOFF.md` e a decisão de transferência. Esses arquivos ficam no diretório privado da execução em `~/.claude/launcher/runs/`. O supervisor exige um checkpoint novo, decisão da sessão atual, término normal do turno, ausência de ferramentas/agentes/tarefas conhecidas e nenhum processo descendente antes de encerrar o original e abrir o router. Tarefa marcada como concluída não é transferida. Sem checkpoint válido, não há encerramento preventivo; permanece a recuperação por esgotamento reconhecido. Os lembretes são limitados para evitar um ciclo infinito.
-
-A avaliação de proximidade da conclusão é feita pelo agente; não há previsão garantida de tokens ou tempo. O percentual depende dos dados nativos após respostas da API e pode subir de uma vez, inclusive de menos de 95% para o limite. Monitorar a cada cinco segundos não cria dados novos nem consulta uma API extra. O mecanismo é cooperativo e não garante preparação se a cota já estiver esgotada ou a telemetria não estiver disponível. Erro de autenticação não é sinal de cota.
-
-Dentro do router, **main1 → main2 → … → main15** (ou mais) usa a ordem numérica, atualizada ao executar novamente `omniroute_pool.py` após cadastrar contas no painel. O OmniRoute escolhe outra conta elegível antes de aceitar a resposta; o terminal, o contexto e o agente permanecem na mesma sessão. Portanto não se aplica preparo em 95% nem handoff entre essas contas. Uma resposta já iniciada não é repetida automaticamente se a conexão cair. Todas as contas sem capacidade, restrições do modelo e indisponibilidade do serviço ainda podem interromper o trabalho. Ter várias contas não garante multiplicar a capacidade permitida pelo OpenRouter.
-
-Se você autorizar explicitamente trabalho autônomo, as instruções do kit orientam a adiar dúvidas opcionais e registrar suposições. Isso não elimina permissões obrigatórias, bloqueios reais ou limites dos provedores; o kit não configura permissão irrestrita nem promete execução infinita.
-
-Fontes: [telemetria da status line](https://code.claude.com/docs/en/statusline), [eventos e decisões de hooks](https://code.claude.com/docs/en/hooks), [limites OpenRouter](https://openrouter.ai/docs/api_reference/limits).
-
-`CONTINUIDADE.md` no projeto deve registrar objetivo, estado, testes e operações incertas. Nunca repita publicações, mensagens ou pagamentos apenas porque houve retomada. Se não houver tempo/cota para terminar, entregue esse registro e a próxima ação concreta.
+- Rode `--aplicar` **fora do Claude Code**, com todas as sessões `claude` e `clauderouter` fechadas, depois de reinstalar o kit e reabrir o terminal. O script recusa enquanto encontrar sessões do launcher, hooks do launcher no `settings.json` ou o `launcher\bin` no PATH.
+- Nada é apagado. Cada item vai para `~/.claude/launcher/backups/remocao-router-<data>/quarentena/`, com hashes num `journal.json`. Primeiro saem os arquivos do router, por último o `hook.py`, o `launcher.py` e o `launcher\bin`. Junctions saem como link, sem entrar na pasta de destino.
+- Para desfazer: `python scripts/remove_router.py --restaurar <journal.json>`. A restauração confere tudo antes e recusa se algum destino já existir ou se a quarentena tiver mudado.
+- O script não toca em `~/.omniroute`, nas chaves OpenRouter, no `settings.json` nem no resto do perfil. Para tirar o OmniRoute depois: `omniroute stop`, `npm uninstall -g omniroute`, apagar `~/.omniroute` e revogar as chaves em <https://openrouter.ai/settings/keys>.
 
 ## Skills, agentes e workflows
 
@@ -232,10 +138,9 @@ O [catálogo completo](docs/CATALOGO.md) explica **cada recurso**, quando usar e
 
 | Conteúdo | O que você encontra no catálogo |
 |---|---|
-| 29 skills de conhecimento e coordenação | Finalidade e exemplo de uso de cada skill; inclui a skill mestre orchestration-kit. |
-| 11 skills de workflow | Procedimentos de planejamento, criação, investigação, publicação e outros objetivos. Somadas às 29 acima, são 40 skills. |
-| 17 agentes especialistas | Qual especialista escolher no Claude original e como aplicar a persona no Antigravity. |
-| 5 agentes do OpenRouter | Função, modelo principal, reserva e exemplos de delegação próprios do perfil router. |
+| 30 skills de conhecimento e coordenação | Finalidade e exemplo de uso de cada skill; inclui a skill mestre orchestration-kit. |
+| 11 skills de workflow | Procedimentos de planejamento, criação, investigação, publicação e outros objetivos. Somadas às 30 acima, são 41 skills. |
+| 17 agentes especialistas | Qual especialista escolher no Claude Code e como aplicar a persona no Antigravity. |
 | Recursos internos | As 23 operações do Impeccable e os 13 templates do app-builder, com indicação de uso. |
 
 Exemplos no Claude Code:
@@ -249,7 +154,7 @@ Use o agente test-engineer para verificar os casos de borda desta regra.
 
 No Antigravity, selecione `/nome-da-skill` ou peça que aplique seu conhecimento. Os agentes distribuídos são personas Markdown: peça a leitura do arquivo correspondente em `~/.gemini/config/agents/`. Isso não garante a criação de um subagente nativo.
 
-Prefira `/workflow-create`, `/workflow-plan`, `/workflow-debug` e os demais nomes `workflow-*` nas duas ferramentas. Os comandos Claude legados continuam em `~/.claude/commands`, mas alguns nomes, como `/status`, `/debug` e `/plan`, podem coincidir com comandos nativos. Os workflows convertidos atendem à migração oficial do Antigravity para skills. No router, siga os cinco agentes próprios; os procedimentos genéricos de orquestração do perfil original não substituem essa política.
+Prefira `/workflow-create`, `/workflow-plan`, `/workflow-debug` e os demais nomes `workflow-*` nas duas ferramentas. Os comandos Claude legados continuam em `~/.claude/commands`, mas alguns nomes, como `/status`, `/debug` e `/plan`, podem coincidir com comandos nativos. Os workflows convertidos atendem à migração oficial do Antigravity para skills.
 
 O conteúdo foi generalizado a partir do kit fornecido pelo proprietário, removendo referências pessoais, projetos, MCP e settings específicos. Memória Obsidian é opcional e desativada por padrão. Skills e agentes usam a cota do modelo ativo; não incluem novas contas ou créditos.
 
@@ -260,47 +165,21 @@ O instalador mescla arquivos individualmente, preserva arquivos não relacionado
 ```bash
 python scripts/audit_public.py
 python -m unittest discover -s tests -v
-python runtime/test_profiles.py
+python install.py --dry-run
 ```
 
-Os testes de roteamento usam servidor simulado e não geram cobranças. A [primeira execução da CI passou no Windows e no macOS](https://github.com/matheusdavipc-ai/Claude-Antigravity-Kit/actions/runs/39157803472). Isso valida as suites automatizadas, não o login interativo nem o uso real de Keychain/Claude em um Mac. Veja os detalhes e limites em [Validação](docs/VALIDACAO.md).
+Os testes usam pastas temporárias e não fazem chamadas a modelos. A CI roda no Windows e no macOS; isso valida as suítes automatizadas, não o login interativo num Mac. Veja os detalhes e limites em [Validação](docs/VALIDACAO.md).
 
-Para reverter a última instalação: `python ~/.claude/launcher/runtime/rollback.py`. A reversão recusa sobrescrever edições posteriores, preserva diretórios, links e credenciais, e não desinstala Python/Node/Claude/OmniRoute. Registros anteriores ficam em cada backup. A reversão dos arquivos do kit não desfaz as mudanças feitas pela API no OmniRoute: consulte `pool-before.json` no backup do pool e restaure estratégia/prioridades pelo painel, se necessário. A chave local criada pode ser revogada no gerenciador de chaves quando não estiver mais em uso. Caso haja interrupção, leia `installation.json` e o backup correspondente; não execute uma reinstalação cega.
+Para reverter a última instalação: `python ~/.claude/launcher/runtime/rollback.py`. A reversão recusa sobrescrever edições posteriores, preserva diretórios, links e credenciais, devolve o PATH anterior e não desinstala Python nem Claude. Registros anteriores ficam em cada backup. Caso haja interrupção, leia `installation.json` e o backup correspondente; não execute uma reinstalação cega.
 
-Antes de publicar, execute a auditoria. Publique **somente este repositório**, nunca `.claude`, `.gemini`, `.omniroute`, backups, logs ou pastas de clientes. O `.gitignore` e a auditoria são proteções complementares, não substituem revisar o diff. Os instaladores não publicam arquivos automaticamente; revise o conteúdo antes de enviar alterações ao GitHub.
+Antes de publicar, execute a auditoria. Publique **somente este repositório**, nunca `.claude`, `.gemini`, backups, logs ou pastas de clientes. O `.gitignore` e a auditoria são proteções complementares, não substituem revisar o diff. Os instaladores não publicam arquivos automaticamente.
 
 ## Fontes
-
-- [Fallback e seleção de contas do OmniRoute](https://github.com/diegosouzapw/OmniRoute/discussions/5099)
 
 - [Instalação oficial do Claude](https://code.claude.com/docs/en/setup)
 - [Seletor e nomes de modelos](https://code.claude.com/docs/en/settings-reference#modelpicker)
 - [Modelos e perfis](https://code.claude.com/docs/en/model-config)
 - [Hooks](https://code.claude.com/docs/en/hooks)
-- [OmniRoute](https://github.com/diegosouzapw/OmniRoute)
-- [Integração OpenRouter/Claude Code](https://openrouter.ai/docs/cookbook/coding-agents/claude-code-integration)
 - [Migração de workflows do Antigravity](https://antigravity.google/docs/migration/workflows-to-skills)
 
 Os prompts acima também estão em [Prompts de instalação](docs/PROMPT-INSTALACAO.md). Veja o [catálogo de uso](docs/CATALOGO.md) e os [avisos de terceiros](THIRD_PARTY_NOTICES.md) para conhecer os recursos e sua origem.
-
-## Contexto e compactacao por modelo
-
-O catalogo oficial consultado em 05/11/2026 esta registrado em models.json, incluindo contexto e resposta maxima por modelo. Ao abrir o router, o lancador recalcula a configuracao com metadados atuais. O gateway revalida metadados periodicamente e limita a resposta ao valor compativel com os candidatos disponiveis. Se uma janela diminuir durante a sessao, bloqueia a chamada e pede reinicializacao para recalcular a compactacao, sem mandar contexto para uma reserva menor.
-
-| Modelo | Contexto publicado | Compactacao configurada |
-|---|---:|---:|
-| Nemotron 3.5 Lightning | 1000000 | 918080 |
-| Gemma 4 31B | 262144 | 206848 |
-| Nemotron 3.5 Super VL | 1000000 | 212992 |
-| North Mini Code | 256000 | 206848 |
-| Gemma 4 26B A4B | 262144 | 206848 |
-| Nemotron 3 Ultra | 1000000 | 918080 |
-| Xing4.0 29B A4B | 262144 | 174080 |
-
-A compactacao reserva espaco para a resposta e uma margem adicional de 16384 tokens. Nemotron 3.5 Super VL compacta antes para preservar a reserva Gemma 4 31B, cuja janela e menor. O mesmo criterio considera North Mini Code na dupla de codigo auxiliar. Imagens e diferentes tokenizadores podem causar diferencas de contagem; os limites do provedor continuam soberanos.
-
-Limite do Claude Code: modelSettings.autoCompactWindow permite compactacao individual, mas nao existe um campo oficial arbitrario de janela por modelo para esses IDs externos. Por isso modelos com pelo menos 1000000 usam o sufixo oficial [1m] (removido antes da chamada OpenRouter). Os menores usam a janela nativa conservadora de 256000, o menor tamanho desse grupo; Xing4.0 29B A4B e os dois Gemma 4 deixam de aproveitar 6144 tokens da capacidade publicada. Nao foram falsificadas identidades Claude por behavesAs ou modelOverrides, nem desativada a compactacao. O antigo teto global de 200000 foi removido.
-
-A configuracao e isolada do perfil Anthropic original. `clauderouter --listar-modelos` mostra os limites registrados e as reservas sem gerar resposta. Reabra clauderouter para carregar a configuracao nova. A CI e os testes locais usam provedores simulados; a verificacao visual interativa permanece dependente de autorizacao de confianca na pasta e nao foi contornada.
-
-Fontes: https://openrouter.ai/api/v1/models e https://code.claude.com/docs/en/model-config#correct-the-window-for-a-gateway-or-custom-model-id e https://code.claude.com/docs/en/settings-reference#modelsettings

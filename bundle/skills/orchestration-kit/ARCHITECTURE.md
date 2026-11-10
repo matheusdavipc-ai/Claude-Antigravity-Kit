@@ -18,7 +18,7 @@ Everything lives under one flat skills directory:
     ├── mcp_config.json                         # Global MCP servers (github, vercel, ...)
     ├── skills/                                 # ALL skills (auto-discovered by Antigravity)
     │   ├── AGENTS.md                           # Canonical behavioral rules (shared)
-    │   ├── <28 skill folders>/SKILL.md
+    │   ├── <29 skill folders>/SKILL.md
     │   └── orchestration-kit/                  # Framework home (a skill itself)
     │       ├── ARCHITECTURE.md                 # This file
     │       ├── SKILL.md                        # Master router
@@ -70,7 +70,7 @@ Specialist personas. Loaded by the router; each declares which skills it uses.
 
 ---
 
-## Skills (28)
+## Skills (29)
 
 Modular knowledge domains. Auto-discovered by Antigravity from their `description`.
 
@@ -131,6 +131,12 @@ Modular knowledge domains. Auto-discovered by Antigravity from their `descriptio
 | --- | --- |
 | `seo-fundamentals` | SEO, E-E-A-T, Core Web Vitals |
 | `documentation-templates` | README, API docs, changelog formats |
+
+### Data & Scraping (1)
+
+| Skill | Description |
+| --- | --- |
+| `scrapling` | Web scraping/crawling with Scrapling (D4Vinci, BSD-3): HTTP and stealth fetchers, JS pages, Cloudflare, spiders, CSS/XPath parsing, page-to-Markdown for RAG. Needs Python 3.10+ and `pip install "scrapling[all]"` |
 
 ### Writing & Content (1)
 
@@ -246,6 +252,6 @@ PRODUCT.md/DESIGN.md in the global kit.
 | Metric | Value |
 | --- | --- |
 | Agents | 17 |
-| Skills | 28 (+ orchestration-kit) |
+| Skills | 29 (+ orchestration-kit) |
 | Workflows | 11 |
 | Scripts | 4 master + 11 skill-level |

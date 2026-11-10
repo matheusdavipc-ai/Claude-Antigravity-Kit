@@ -138,12 +138,6 @@ the final report. This overrides blanket question-first requirements in shared k
 Mandatory permission prompts, missing essential access and irreversible actions outside the
 user's authorization still require user input. Never bypass those controls or promise endless work.
 
-The original supervised launcher may report 95% subscription usage. On that reminder, finish
-and verify an almost-complete task, or drain background work and prepare the private HANDOFF.md
-and quota-decision.json at the paths in the reminder. Do not start another long stage. Mark
-complete only when the task is actually complete. Never put credentials or internal reasoning in
-handoffs. This cooperative preparation does not guarantee enough remaining quota.
-
 ---
 
 ## 3. Path resolution for this tool

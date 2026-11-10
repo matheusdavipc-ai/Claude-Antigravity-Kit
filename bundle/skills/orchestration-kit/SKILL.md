@@ -32,7 +32,7 @@ agents, workflows, scripts, and the canonical registry.
 
 ## Granular skills
 
-The 28 domain skills live as siblings of this folder, directly under
+The 29 domain skills live as siblings of this folder, directly under
 `~/.gemini/config/skills/`. Antigravity auto-discovers them by description. Agents pull
 them in via their `skills:` frontmatter. See `ARCHITECTURE.md` for the full list and
 the agent↔skill mapping.

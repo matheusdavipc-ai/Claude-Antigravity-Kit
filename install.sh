@@ -11,8 +11,6 @@ if [[ " ${*:-} " == *' --dry-run '* ]]; then
   exec "$kit_python" "$kit_root/install.py" "$@"
 fi
 if [[ "$(uname -s)" != 'Darwin' ]]; then echo 'Este instalador destina-se ao macOS.' >&2; exit 1; fi
-if ! command -v node >/dev/null 2>&1; then echo 'Instale Node.js LTS 22+ (nodejs.org ou brew install node@22).' >&2; exit 1; fi
-node -e 'const v=process.versions.node.split(".").map(Number);process.exit(v[0]>22||(v[0]===22&&v[1]>=19)?0:1)'
 kit_native="$HOME/.local/bin/claude"
 if [[ ! -x "$kit_native" ]]; then
   kit_download="$(mktemp)"
@@ -22,6 +20,4 @@ if [[ ! -x "$kit_native" ]]; then
   rm -f "$kit_download"
   trap - EXIT
 fi
-if ! command -v omniroute >/dev/null 2>&1; then npm install -g omniroute@3.8.51; fi
 "$kit_python" "$kit_root/install.py" "$@"
-"$kit_python" "$kit_root/scripts/configure_omniroute.py"
