@@ -1,5 +1,6 @@
 ---
-description: Structured brainstorming for projects and features. Explores multiple options before implementation.
+description: Use quando o usuário acionar /brainstorm para explorar opções e estruturar ideias antes de codar.
+disable-model-invocation: true
 ---
 
 # /brainstorm - Structured Idea Exploration

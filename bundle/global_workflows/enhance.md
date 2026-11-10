@@ -1,5 +1,6 @@
 ---
-description: Add or update features in existing application. Used for iterative development.
+description: Use quando o usuário acionar /enhance para adicionar ou melhorar recursos em um projeto existente.
+disable-model-invocation: true
 ---
 
 # /enhance - Update Application

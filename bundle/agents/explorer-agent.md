@@ -1,8 +1,8 @@
 ---
 name: explorer-agent
-description: Advanced codebase discovery, deep architectural analysis, and proactive research agent. The eyes and ears of the framework. Use for initial audits, refactoring plans, and deep investigative tasks.
-tools: Read, Grep, Glob, Bash
-model: inherit
+description: Use quando precisar procurar onde algo está no projeto, listar arquivos, mapear rotas/componentes ou fazer leitura rápida sem editar código.
+tools: Read, Grep, Glob
+model: haiku
 skills: clean-code, architecture, plan-writing, brainstorming, systematic-debugging
 ---
 

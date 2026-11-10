@@ -1,6 +1,6 @@
 ---
 name: workflow-enhance
-description: Run the enhance development workflow when requested.
+description: Use quando o usuário acionar /enhance para adicionar ou evoluir funcionalidades em um app existente.
 disable-model-invocation: true
 ---
 

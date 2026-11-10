@@ -1,6 +1,6 @@
 ---
 name: workflow-create
-description: Run the create development workflow when requested.
+description: Use quando o usuário acionar /create para iniciar a criação guiada de uma nova aplicação.
 disable-model-invocation: true
 ---
 

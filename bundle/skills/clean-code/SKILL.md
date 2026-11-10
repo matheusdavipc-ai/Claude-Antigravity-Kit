@@ -1,6 +1,6 @@
 ---
 name: clean-code
-description: Pragmatic coding standards - concise, direct, no over-engineering, no unnecessary comments
+description: Use quando estiver escrevendo ou limpando código para manter funções curtas, nomes claros, zero código morto e sem complexidade desnecessária.
 allowed-tools: Read, Write, Edit
 version: 2.0
 priority: CRITICAL

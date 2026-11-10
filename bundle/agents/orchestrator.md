@@ -1,6 +1,6 @@
 ---
 name: orchestrator
-description: Multi-agent coordination and task orchestration. Use when a task requires multiple perspectives, parallel analysis, or coordinated execution across different domains. Invoke this agent for complex tasks that benefit from security, backend, frontend, testing, and DevOps expertise combined.
+description: Use quando uma tarefa grande envolver várias frentes ao mesmo tempo (banco, backend, frontend, testes e deploy) exigindo coordenação.
 tools: Read, Grep, Glob, Bash, Write, Edit, Agent
 model: inherit
 skills: clean-code, parallel-agents, behavioral-modes, plan-writing, brainstorming, architecture, lint-and-validate, bash-linux

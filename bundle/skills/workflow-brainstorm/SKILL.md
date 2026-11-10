@@ -1,6 +1,6 @@
 ---
 name: workflow-brainstorm
-description: Run the brainstorm development workflow when requested.
+description: Use quando o usuário acionar /brainstorm para explorar opções e requisitos antes de implementar.
 disable-model-invocation: true
 ---
 

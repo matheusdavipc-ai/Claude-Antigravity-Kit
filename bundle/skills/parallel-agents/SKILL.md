@@ -1,6 +1,6 @@
 ---
 name: parallel-agents
-description: Multi-agent orchestration patterns. Use when multiple independent tasks can run with different domain expertise or when comprehensive analysis requires multiple perspectives.
+description: Use somente quando o usuário pedir explicitamente para rodar subagentes em paralelo dividindo uma tarefa grande em frentes simultâneas.
 allowed-tools: Read, Glob, Grep
 ---
 

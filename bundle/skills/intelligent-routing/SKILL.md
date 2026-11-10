@@ -1,6 +1,6 @@
 ---
 name: intelligent-routing
-description: Automatic agent selection and intelligent task routing. Analyzes user requests and automatically selects the best specialist agent(s) without requiring explicit user mentions.
+description: Use quando precisar identificar qual agente especialista ou skill do kit é o mais indicado para resolver uma tarefa específica.
 version: 1.0.0
 ---
 

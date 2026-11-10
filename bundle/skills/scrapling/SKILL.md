@@ -1,6 +1,6 @@
 ---
 name: scrapling
-description: Web scraping and crawling with the Scrapling Python library (CLI, Python code or MCP server). Use when the user wants to scrape, crawl, collect or extract data from websites (raspar site, extrair dados, coletar informações, crawler, spider, scraper); when WebFetch fails, comes back empty or blocked, or the page needs JavaScript; when the site has anti-bot or Cloudflare protection; to turn pages or whole sites into clean Markdown for LLM/RAG; to parse HTML with CSS/XPath selectors or migrate from BeautifulSoup/Scrapy; or to write Python scrapers and spiders with sessions, proxies, pagination, captured API responses and pause/resume. Not for filling forms by hand in the user's own logged-in browser.
+description: Use quando o usuário pedir para raspar site, extrair dados, coletar contatos/preços/imóveis da web ou criar scraper/crawler em Python com Scrapling.
 version: "0.5.1"
 license: Complete terms in LICENSE.txt
 metadata:

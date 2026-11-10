@@ -1,5 +1,6 @@
 ---
-description: Display agent and project status. Progress tracking and status board.
+description: Use quando o usuário acionar /status para consultar o painel de progresso do projeto e tarefas.
+disable-model-invocation: true
 ---
 
 # /status - Show Status

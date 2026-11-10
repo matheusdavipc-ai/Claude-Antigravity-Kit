@@ -1,6 +1,6 @@
 ---
 name: systematic-debugging
-description: 4-phase systematic debugging methodology with root cause analysis and evidence-based verification. Use when debugging complex issues.
+description: Use quando algo der erro, quebrar ou não funcionar como esperado e precisar investigar a causa raiz passo a passo antes de tentar consertar.
 allowed-tools: Read, Glob, Grep
 ---
 

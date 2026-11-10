@@ -1,6 +1,6 @@
 ---
 name: workflow-test
-description: Run the test development workflow when requested.
+description: Use quando o usuário acionar /test para gerar e executar testes automatizados no projeto.
 disable-model-invocation: true
 ---
 

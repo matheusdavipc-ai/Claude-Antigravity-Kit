@@ -1,182 +1,52 @@
-# CLAUDE.md — Claude Code Bootstrap (Global)
+# CLAUDE.md — Claude Code Global Rules
 
-You are operating under the General Development Kit global agent system. The rules in THIS file are
-always active and are NOT optional. They apply to EVERY request, including ones that look
-simple, small, or trivial. You do not get to decide that a request is "too simple" to
-follow this protocol — the protocol itself decides that.
+Regras globais de operação, triagem de modelos e economia de tokens.
 
 ---
 
-## 0. NON-NEGOTIABLE EXECUTION ORDER (every request, every new session)
+## 1. Economia de Contexto e Resposta Enxuta (Sempre Ativo)
 
-Before doing ANYTHING else — before scaffolding, running any command, writing any file, or
-answering — you MUST, in this order:
-
-1. Read `~/.claude/skills/AGENTS.md` (the canonical rules; junction to the shared file).
-2. Read `~/.claude/skills/orchestration-kit/ARCHITECTURE.md` (the registry of every skill,
-   agent, and workflow). Route only to things listed there.
-3. **Triage the difficulty and pick the model + effort** (section 1A — Haiku for reading, Sonnet/Opus for work, Fable on request).
-   Every task, every command, every file change goes through this first.
-4. Apply the **Agent Routing** (section 1) and the **Socratic Gate** (section 2) below.
-5. Use persistent memory only when explicitly configured by its owner; otherwise keep continuity in the current project.
-
-"The task looked simple so I skipped this" is a FAILURE. Simple tasks still pass through
-triage, routing and the gate — it takes only a moment and is mandatory.
+- **Zero leitura especulativa no Turno 1:** NÃO leia `AGENTS.md`, `ARCHITECTURE.md`, arquivos de agentes (`~/.claude/agents/*.md`) nem índices antes de analisar o pedido. As descrições já estão nas ferramentas `Skill` e `Agent`. Consulte `ARCHITECTURE.md` ou `_INDEX.md` apenas quando a tarefa exigir histórico entre projetos ou validação global.
+- **Agrupe ferramentas no mesmo turno (menos turnos = menos `cache_read`):** cada turno extra reenvia todo o contexto acumulado. Quando precisar ler 2+ arquivos (`Read`) ou buscar (`Grep`/`Glob`), chame todos no **mesmo turno** em paralelo. Em ajustes diretos, execute `Edit` e o comando de teste (`Bash`/`PowerShell`) no **mesmo turno**.
+- **Leitura cirúrgica:** use `Grep` e `Glob` para localizar símbolos primeiro e `Read` com `offset` e `limit` em arquivos grandes (>200 linhas). Nunca releia um arquivo que já está no contexto e não foi modificado.
+- **Diffs em vez de arquivos inteiros:** prefira `Edit` pontual. Ao mostrar mudanças ao usuário, cite apenas o diff ou linhas relevantes, nunca o arquivo inteiro.
+- **Estilo de resposta (Lite):** direto ao ponto, sem introdução bajuladora ("Claro!", "Ótima pergunta!"), sem repetir o enunciado e sem resumo longo ao final. Mantenha toda a precisão técnica e gramática normal.
+- **Subagentes com disciplina:** NÃO delegue tarefas simples ou edições pequenas a subagentes (cada subagente abre novo contexto). Use subagentes (`Explore` ou `explorer-agent` em `haiku`) apenas para explorar/buscar em muitos arquivos sem poluir a sessão principal, ou quando o usuário pedir paralelismo explicitamente.
 
 ---
 
-## 1A. MODEL & EFFORT ROUTING — ALWAYS ACTIVE (before any task, command, or file change)
+## 2. Política de Modelos e Esforço (Níveis 0–5)
 
-Before doing ANY task — running a command, editing a file, researching, building — first
-judge how hard it is, then run it on the right model at the right effort.
+Padrão da sessão: **`sonnet` com esforço `medium`**. Todos os 4 modelos (`haiku`, `sonnet`, `opus`, `fable`) permanecem disponíveis via `/model`.
 
-**Allowed models: `haiku`, `sonnet` and `opus`. `fable` only when the user asks for it, or
-after `opus`/`xhigh` already failed on the same task.** Haiku is for read-only work: finding
-files, mapping the codebase, summarizing docs or logs. The built-in `Explore` agent and
-research subagents may run on Haiku. Never use Haiku to edit files or make decisions.
+| Nível | Tipo de Tarefa | Modelo Recomendado | Effort |
+| :---: | --- | --- | :---: |
+| **0** | Leitura, busca, inventário, exploração (`Explore` / `explorer-agent`) | `haiku` (`claude-haiku-5-5`) | `low` |
+| **1** | Edição simples, copy, CSS/Tailwind, ajuste localizado em 1–2 arquivos | `sonnet` (`claude-sonnet-5-5`) | `low` |
+| **2** | Feature padrão, componente React/Next, endpoint, teste unitário, bug comum | `sonnet` (`claude-sonnet-5-5`) | `medium` |
+| **3** | Refatoração multi-arquivo moderada, integração de API/banco, E2E | `sonnet` (`claude-sonnet-5-5`) | `high` |
+| **4** | Arquitetura complexa, bug difícil entre camadas, auditoria crítica | `opus` (`claude-opus-5-5`) | `high` |
+| **5** | Decisão arquitetural crítica, segurança sensível, raciocínio profundo | `opus` (`claude-opus-5-5`) ou `fable` (`claude-fable-5-1`) sob pedido | `xhigh` |
 
-**How it works in Claude Code.** The main conversation is the triage desk and coordinator.
-It cannot change its own model, so it hands the execution to a subagent through the Agent
-tool and passes `model` and `effort` on EVERY invocation. (Per-invocation `effort` needs
-Claude Code v2.1.292+; if the parameter is rejected, pass only `model` and tell the user to
-update Claude Code.)
-
-### Step 1 — Triage (silent, a few seconds)
-
-| Level | Typical tasks | Model | Effort |
-| --- | --- | --- | --- |
-| **0 · Read/explore** | Find files, map the codebase, summarize docs/logs, read-only research | `haiku` | `low` |
-| **1 · Trivial** | Run a known command, rename, typo, small copy/text tweak, formatting | `sonnet` | `low` |
-| **2 · Simple** | Single-file change with a clear spec, small component, bug with an obvious cause, tests for existing code, README/docs, SEO meta tags, writing/copy + `avoid-ai-writing` pass | `sonnet` | `medium` |
-| **3 · Moderate** | 2–4 files following an existing pattern, a feature that copies project conventions, routine refactor, E2E tests | `sonnet` | `high` |
-| **4 · Hard** | Multi-domain feature, bug with unknown root cause, architecture/stack decision, auth/payments/client data, performance investigation, planning a new project | `opus` | `high` |
-| **5 · Critical** | Production deploy/rollback, DB migration on real data, security audit, large refactor/migration, something a previous attempt failed to fix, orchestrating a whole new system | `opus` (`fable` only if the user asks or `opus` already failed) | `xhigh` |
-
-**Tie-breakers**
-
-- In doubt between two levels → take the higher one.
-- Irreversible, production, money, credentials or client data → level 4 at minimum.
-- **Escalate, never insist:** if a Haiku read comes back incomplete → redo it on `sonnet`. If a
-  Sonnet run fails, stalls, or returns shaky work → redo it on `opus`/`high`. If `opus`/`high`
-  fails → `opus`/`xhigh`. If `opus`/`xhigh` fails → stop and offer `fable` to the user.
-- `fable` and `max` effort only when the user asks for them explicitly (or, for `fable`, after
-  `opus` failed as above).
-- Multi-step work: triage EACH sub-task on its own (e.g. map the code on `haiku`/`low`, plan on
-  `opus`/`high`, the mechanical edits on `sonnet`/`medium`, the review on `opus`/`high`).
-
-### Step 2 — Announce (together with the agent line)
-
-```
-🧭 Triage: Level 2 (simple) → Sonnet · medium
-🤖 Applying knowledge of @frontend-specialist...
-```
-
-### Step 3 — Execute on that model
-
-Invoke the specialist from section 1 with the Agent tool, passing `model: "haiku"`,
-`model: "sonnet"`, `model: "opus"` (or `model: "fable"` under the rule above) and
-`effort: "<low|medium|high|xhigh>"`. If no specialist fits, use the `general-purpose` agent
-with the same parameters; for read-only exploration use `Explore` with `model: "haiku"`.
-
-**Stays in the main conversation (no delegation):** the triage itself, Socratic Gate
-questions, reading this bootstrap / the registry / the Brain index, short answers to pure
-factual questions, and the final summary to the user.
-
-**User override:** if the user names a model or effort ("faz no Opus", "usa o Sonnet",
-"esforço alto"), follow it for that task.
+**Regras da política:**
+1. **`haiku`** nos agentes só de leitura/busca (`explorer-agent` tem `model: haiku` no frontmatter; ao chamar `Agent` apenas para busca/leitura, passe `model: "haiku"`). Demais subagentes herdam o modelo da sessão (`sonnet`).
+2. **`sonnet`** como padrão para implementação (`effort: medium` por padrão; `low` em ajustes triviais e `high` em mudanças multi-arquivo).
+3. **`opus`** somente sob pedido do usuário ou em tarefas de Nível 4–5 (sugira em 1 linha antes se a sessão estiver em `sonnet`).
+4. **`fable`** somente sob pedido explícito do usuário ou se `opus` em `xhigh` falhar.
 
 ---
 
-## 1. AGENT ROUTING — ALWAYS ACTIVE (do this on every request)
+## 3. Roteamento e Portão Socrático
 
-Before responding to ANY code, design, or build request, silently detect the domain and
-pick the best-matching agent below. In Claude Code these 17 agents are REAL native
-subagents (auto-discovered from `~/.claude/agents/`), so you can delegate to one directly
-for isolated context. Announce it first:
-
-```
-🤖 Applying knowledge of @frontend-specialist...
-```
-
-If a request spans multiple domains, route to `orchestrator` and pass the Socratic Gate
-before invoking anything.
-
-**The 17 agents:**
-
-| Agent | Use when the request involves… |
-| --- | --- |
-| `frontend-specialist` | UI, components, React/Next/Vue, CSS, Tailwind, responsive, styling, state |
-| `backend-specialist` | APIs, endpoints, server logic, auth, database integration |
-| `database-architect` | schema, SQL, migrations, indexing, data modeling, postgres |
-| `debugger` | bugs, errors, crashes, "not working", broken, investigate, fix |
-| `devops-engineer` | deploy, production, server, PM2, SSH, release, rollback, CI/CD (HIGH RISK) |
-| `security-auditor` | security, vulnerability, OWASP, XSS, injection, auth, encryption, pentest |
-| `performance-optimizer` | speed, slow, optimize, bundle size, memory, CPU, Core Web Vitals |
-| `test-engineer` | writing tests, coverage, TDD, jest, pytest, unit/integration tests |
-| `qa-automation-engineer` | E2E, Playwright, Cypress, CI pipelines, regression automation |
-| `seo-specialist` | SEO, GEO, Core Web Vitals, E-E-A-T, AI search visibility |
-| `project-planner` | starting new projects, planning features, task breakdown, file structure |
-| `orchestrator` | multi-domain tasks needing several specialists coordinated |
-| `explorer-agent` | codebase discovery, audits, deep investigation, refactoring research |
-| `code-archaeologist` | legacy code, reverse engineering, undocumented systems, modernization |
-| `product-manager` | requirements, user stories, acceptance criteria, prioritization |
-| `product-owner` | requirements elicitation, roadmap, backlog, MVP, PRD, stakeholders |
-| `documentation-writer` | ONLY when user explicitly asks for README/API docs/changelog |
-
-For web builds the default is `frontend-specialist`; for a brand-new project scaffold,
-route through `project-planner` (and `orchestrator` if multi-domain).
+- Em tarefas de código/design (Nível 3+), anuncie o especialista em 1 linha (`🤖 Applying knowledge of @<agente>...`) e abra `~/.claude/agents/<agente>.md` somente se precisar do protocolo completo daquele agente. Em tarefas simples (Níveis 0–2), resolva direto sem abrir arquivos de agente.
+- **Portão Socrático enxuto:** se o pedido tiver ambiguidade real de escopo, arquitetura ou impacto destrutivo, faça até 3 perguntas curtas e objetivas antes de editar arquivos. Se o pedido já especificar arquivo, correção e critério de verificação, execute diretamente sem perguntas burocráticas.
 
 ---
 
-## 2. SOCRATIC GATE — MANDATORY BEFORE ANY IMPLEMENTATION
+## 4. Hábitos de Economia de Tokens para o Dia a Dia
 
-Clarify material ambiguity before implementation when the answer is needed to proceed safely.
-Ask only questions that affect the requested outcome; do not require a fixed number of questions.
-When the user explicitly authorizes autonomous work ("continue without stopping", "leave doubts
-for the end"), proceed on reasonable assumptions, record them and defer optional questions to
-the final report. This overrides blanket question-first requirements in shared kit personas.
-Mandatory permission prompts, missing essential access and irreversible actions outside the
-user's authorization still require user input. Never bypass those controls or promise endless work.
-
----
-
-## 3. Path resolution for this tool
-
-When AGENTS.md uses a path token, resolve it as follows for Claude Code:
-
-| Token | Value |
-| --- | --- |
-| `<SKILLS>` | `~/.claude/skills` |
-| `<AGENTS_DIR>` | `~/.claude/agents` |
-| `<WORKFLOWS_DIR>` | `~/.claude/commands` |
-| `<BRAIN>` | `not configured (optional; disabled by default)` |
-
-These are directory junctions to the shared kit, so the files are identical to Antigravity's.
-Registry: `~/.claude/skills/orchestration-kit/ARCHITECTURE.md`.
-
-> Note: some in-kit scripts still reference `~/.gemini/config/skills/...` absolute paths.
-> They resolve to the same files on disk and run as-is. Only generalize them if you run
-> Claude Code on a machine without Antigravity installed.
-
----
-
-## 4. Claude Code-specific notes
-
-- **Skills** auto-discover from `~/.claude/skills/` (junction exposes all kit skills + the
-  shared `AGENTS.md`).
-- **Native subagents (REAL):** the 17 files in `~/.claude/agents/` are valid native
-  subagents (`name`/`description`/`tools`/`model`, isolated context). Delegate to them per
-  section 1, ALWAYS with the `model` + `effort` chosen in section 1A. Their frontmatter says
-  `model: inherit` on purpose: the per-invocation value from the triage wins.
-- **Writing quality:** any text a human will read (site copy, CTAs, posts, emails, README,
-  proposals) gets a pass of the `avoid-ai-writing` skill before delivery (see AGENTS.md).
-- **Native slash commands (REAL):** the 11 files in `~/.claude/commands/` are native `/`
-  commands (`/create`, `/orchestrate`, `/debug`, etc.).
-- **File-creation reminder:** honor the Socratic Gate before writing code; keep this
-  bootstrap short (it loads every session).
-
-> Sections 1 and 2 are duplicated in spirit inside AGENTS.md (the canonical source you edit).
-> They are inlined here because THIS file is always loaded into context; keeping the two
-> critical rules here guarantees they fire even before AGENTS.md is opened.
-> Section 1A (model routing) lives ONLY here, because it is specific to Claude Code;
-> AGENTS.md just points to it.
+- **`/clear` ao trocar de assunto:** encerre o histórico acumulado assim que concluir uma frente antes de iniciar outra.
+- **`/compact <foco>`:** quando o contexto passar de ~50%, compacte indicando o que manter (ex.: `/compact mantenha apenas o plano atual e os diffs pendentes`).
+- **Plan Mode em tarefas grandes:** use `/plan` (ou Shift+Tab) antes de mudanças grandes para alinhar arquivos e etapas com baixo consumo.
+- **Subagentes para exploração pesada:** peça *"use um subagente Haiku para localizar X"* quando precisar varrer muitos arquivos; mantenha a edição na sessão principal.
+- **Visibilidade de consumo:** acompanhe modelo, contexto, custo e cota `5h`/`7d` na status line nativa, use `/usage` ou `/context` na sessão e `npx ccusage@latest daily` / `session` / `blocks` no terminal.

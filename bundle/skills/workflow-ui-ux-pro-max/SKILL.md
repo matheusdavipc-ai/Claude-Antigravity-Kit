@@ -1,6 +1,6 @@
 ---
 name: workflow-ui-ux-pro-max
-description: Run the ui-ux-pro-max development workflow when requested.
+description: Use quando o usuário acionar /ui-ux-pro-max para criar sistema de design, paleta e interface completa.
 disable-model-invocation: true
 ---
 

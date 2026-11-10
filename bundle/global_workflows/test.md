@@ -1,5 +1,6 @@
 ---
-description: Test generation and test running command. Creates and executes tests for code.
+description: Use quando o usuário acionar /test para criar e rodar a suíte de testes do código atual.
+disable-model-invocation: true
 ---
 
 # /test - Test Generation and Execution

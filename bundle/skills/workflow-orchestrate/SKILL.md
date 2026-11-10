@@ -1,6 +1,6 @@
 ---
 name: workflow-orchestrate
-description: Run the orchestrate development workflow when requested.
+description: Use quando o usuário acionar /orchestrate para coordenar múltiplos especialistas em uma tarefa complexa.
 disable-model-invocation: true
 ---
 

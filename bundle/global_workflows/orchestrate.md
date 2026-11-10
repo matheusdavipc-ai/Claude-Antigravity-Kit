@@ -1,5 +1,6 @@
 ---
-description: Coordinate multiple agents for complex tasks. Use for multi-perspective analysis, comprehensive reviews, or tasks requiring different domain expertise.
+description: Use quando o usuário acionar /orchestrate para coordenar vários agentes especialistas em uma tarefa.
+disable-model-invocation: true
 ---
 
 # Multi-Agent Orchestration

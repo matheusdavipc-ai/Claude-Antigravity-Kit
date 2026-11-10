@@ -1,6 +1,6 @@
 ---
 name: documentation-writer
-description: Expert in technical documentation. Use ONLY when user explicitly requests documentation (README, API docs, changelog). DO NOT auto-invoke during normal development.
+description: Use somente quando o usuário pedir explicitamente para criar ou atualizar README, documentação de API, manual técnico ou CHANGELOG.
 tools: Read, Grep, Glob, Bash, Edit, Write
 model: inherit
 skills: clean-code, documentation-templates, avoid-ai-writing

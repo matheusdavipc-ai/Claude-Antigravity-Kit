@@ -1,6 +1,6 @@
 ---
 name: nextjs-react-expert
-description: Next.js and React performance expert (General Development Kit kit). 57 optimization rules prioritized by impact. Use when building React/Next.js components, eliminating render waterfalls, reducing bundle size, optimizing Core Web Vitals, or reviewing React code for performance. Triggers on react, next.js, component, hydration, bundle, waterfall, server component.
+description: Use quando for desenvolver ou otimizar páginas e componentes em React ou Next.js (App Router, Server Components, hydration, hooks e re-renders).
 allowed-tools: Read, Write, Edit, Glob, Grep, Bash
 ---
 

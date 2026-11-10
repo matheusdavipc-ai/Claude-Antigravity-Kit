@@ -1,6 +1,6 @@
 ---
 name: webapp-testing
-description: "Use when testing a running web application end-to-end, automating the browser, or auditing a live UI. Covers Playwright, E2E test design, visual/screenshot regression, API testing, deep-audit discovery, and CI integration. This is browser-level testing of the running app. NOT for unit tests, integration tests, or mocking strategy at the code level -- use testing-patterns for that."
+description: Use quando for testar o site ou sistema aberto no navegador com Playwright, teste E2E ponta a ponta, tirar print de telas ou checar fluxos visuais.
 allowed-tools: Read, Write, Edit, Glob, Grep, Bash
 ---
 

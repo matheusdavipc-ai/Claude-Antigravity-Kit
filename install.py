@@ -24,6 +24,8 @@ def load(path):
 def managed_block(existing, addition):
     begin, end = '<!-- claude-openrouter-kit:start -->', '<!-- claude-openrouter-kit:end -->'
     block = begin + '\n' + addition.rstrip() + '\n' + end
+    legacy_dup = r'\n*# (?:CLAUDE\.md — Claude Code|GEMINI\.md — Antigravity) Bootstrap \(Global\).*?(?=' + re.escape(begin) + r')'
+    existing = re.sub(legacy_dup, '\n\n', existing, flags=re.S)
     pattern = re.escape(begin) + r'.*?' + re.escape(end)
     if re.search(pattern, existing, re.S):
         return re.sub(pattern, lambda match: block, existing, flags=re.S)
@@ -32,6 +34,14 @@ def managed_block(existing, addition):
 ORIGINAL_MODELS = ['opus', 'sonnet', 'haiku', 'fable', 'claude-opus-5-5', 'claude-sonnet-5-5', 'claude-haiku-5-5', 'claude-fable-5-1']
 ORIGINAL_ALIASES = {'opus', 'sonnet', 'haiku', 'fable', 'opusplan', 'best', 'default'}
 LEGACY_HAIKU_REMAP = 'claude-sonnet-5-5'
+DEFAULT_READ_DENY = [
+    'Read(**/node_modules/**)',
+    'Read(**/.next/**)',
+    'Read(**/dist/**)',
+    'Read(**/build/**)',
+    'Read(**/*.map)',
+    'Read(**/*.min.js)',
+]
 
 def original_model_valid(model):
     # Anthropic aliases and claude-* IDs only; IDs from other providers never reach the profile.
@@ -155,11 +165,13 @@ class Installer:
         self.journal()
         for name in ('core.py', 'rollback.py'):
             self.write(self.kit / 'runtime' / name, (ROOT / 'runtime' / name).read_bytes())
+        statusline_script = self.home / '.claude/statusline.py'
+        self.write(statusline_script, (ROOT / 'runtime/statusline.py').read_bytes())
         self.assets()
         original_path = self.home / '.claude/settings.json'
         original = load(original_path)
         env = original.setdefault('env', {})
-        for key in ('ANTHROPIC_API_KEY', 'ANTHROPIC_AUTH_TOKEN', 'ANTHROPIC_BASE_URL'):
+        for key in ('ANTHROPIC_API_KEY', 'ANTHROPIC_AUTH_TOKEN', 'ANTHROPIC_BASE_URL', 'CLAUDE_CODE_SUBAGENT_MODEL'):
             env.pop(key, None)
         env.update({'ANTHROPIC_DEFAULT_OPUS_MODEL': 'claude-opus-5-5', 'ANTHROPIC_DEFAULT_SONNET_MODEL': 'claude-sonnet-5-5'})
         # Haiku resolves natively. Drop only the remap written by earlier kit versions.
@@ -170,12 +182,28 @@ class Installer:
         for key in list(env):
             if key.startswith('ANTHROPIC_DEFAULT_FABLE_MODEL'):
                 env.pop(key)
-        # Preserve the user's model; reset only values that cannot reach Anthropic.
-        if not original_model_valid(original.get('model')):
-            original['model'] = 'opus'
+        # Default model is Sonnet with medium effort; preserve explicit user choices.
+        legacy_opus_default = original.get('model') == 'opus' and original.get('effortLevel') == 'xhigh'
+        if not original_model_valid(original.get('model')) or legacy_opus_default:
+            original['model'] = 'sonnet'
+        if original.get('effortLevel') in (None, 'xhigh'):
+            original['effortLevel'] = 'medium'
         existing = [model for model in original.get('availableModels', []) if original_model_valid(model)]
         original['availableModels'] = ORIGINAL_MODELS + [model for model in existing if model not in ORIGINAL_MODELS]
-        original.setdefault('permissions', {'defaultMode': 'default'})
+        permissions = original.setdefault('permissions', {'defaultMode': 'default'})
+        if not isinstance(permissions, dict):
+            permissions = {'defaultMode': 'default'}
+            original['permissions'] = permissions
+        permissions.setdefault('defaultMode', 'default')
+        existing_deny = [
+            rule for rule in (permissions.get('deny', []) if isinstance(permissions.get('deny'), list) else [])
+            if rule in DEFAULT_READ_DENY or not rule.startswith('Read(**/')
+        ]
+        permissions['deny'] = existing_deny + [rule for rule in DEFAULT_READ_DENY if rule not in existing_deny]
+        py_cmd = 'python' if shutil.which('python') else 'python3'
+        existing_sl = original.get('statusLine')
+        if not isinstance(existing_sl, dict) or any(tok in str(existing_sl.get('command', '')) for tok in ('quota_watch.py', 'statusline.py')):
+            original['statusLine'] = {'type': 'command', 'command': f'{py_cmd} "{statusline_script}"'}
         drop_kit_hooks(original, self.kit / 'runtime/hook.py')
         self.write(original_path, original)
         for template, path in (('CLAUDE.md', self.home / '.claude/CLAUDE.md'), ('GEMINI.md', self.home / '.gemini/GEMINI.md')):

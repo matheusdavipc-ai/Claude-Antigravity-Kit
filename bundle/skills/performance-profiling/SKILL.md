@@ -1,6 +1,6 @@
 ---
 name: performance-profiling
-description: "Use when a site or app is slow and you need to measure and fix it. Covers Core Web Vitals (LCP, INP, CLS) targets and when to measure, the profile-then-optimize workflow, bundle analysis, runtime CPU/memory profiling, common bottlenecks by symptom, and quick-win priorities. Trigger on: slow load, performance, profiling, bundle size, Lighthouse, memory leak, jank, Web Vitals, optimization."
+description: Use quando um site ou sistema estiver lento ou pesado e precisar medir e corrigir nota do Lighthouse, Core Web Vitals (LCP, INP, CLS) ou bundle.
 allowed-tools: Read, Glob, Grep, Bash
 ---
 

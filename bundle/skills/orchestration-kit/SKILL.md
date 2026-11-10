@@ -1,6 +1,6 @@
 ---
 name: orchestration-kit
-description: Master router and framework home for the Antigravity Kit. Use to coordinate multiple specialist agents, decide which agent and skills apply to a request, or run project-wide validation. The framework home for the 17 specialist agents and 11 slash-command workflows (which live in sibling directories), plus master validation scripts and the ARCHITECTURE registry. Load this when a task spans multiple domains, needs orchestration, or when you must confirm which agents/skills exist.
+description: Use quando precisar consultar o inventário ARCHITECTURE.md do kit ou executar os scripts globais de verificação (checklist.py, verify_all.py).
 ---
 
 # Orchestration Kit — Master Router

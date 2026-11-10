@@ -1,5 +1,6 @@
 ---
-description: Create project plan using project-planner agent. No code writing - only plan file generation.
+description: Use quando o usuário acionar /plan para gerar um arquivo de plano de tarefas sem escrever código.
+disable-model-invocation: true
 ---
 
 # /plan - Project Planning Mode

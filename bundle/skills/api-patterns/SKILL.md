@@ -1,6 +1,6 @@
 ---
 name: api-patterns
-description: API design principles and decision-making. REST vs GraphQL vs tRPC selection, response formats, versioning, pagination.
+description: Use quando for criar ou revisar rotas de API (REST, GraphQL, tRPC), endpoints, webhook, paginação, status HTTP e formato de erros.
 allowed-tools: Read, Write, Edit, Glob, Grep
 ---
 

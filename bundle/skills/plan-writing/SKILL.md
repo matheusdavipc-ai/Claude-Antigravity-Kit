@@ -1,6 +1,6 @@
 ---
 name: plan-writing
-description: Structured task planning with clear breakdowns, dependencies, and verification criteria. Use when implementing features, refactoring, or any multi-step work.
+description: Use quando precisar montar um plano de execução com tarefas numeradas, ordem de implementação, arquivos afetados e como testar cada etapa.
 allowed-tools: Read, Glob, Grep
 ---
 

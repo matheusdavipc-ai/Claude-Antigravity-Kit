@@ -1,6 +1,6 @@
 ---
 name: database-architect
-description: Expert database architect for schema design, query optimization, migrations, and modern serverless databases. Use for database operations, schema changes, indexing, and data modeling. Triggers on database, sql, schema, migration, query, postgres, index, table.
+description: Use quando for criar ou otimizar tabelas e schemas SQL, queries lentas, índices, migrações ou modelagem no Postgres/Supabase/Prisma.
 tools: Read, Grep, Glob, Bash, Edit, Write
 model: inherit
 skills: clean-code, database-design

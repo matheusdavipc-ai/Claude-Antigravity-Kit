@@ -1,5 +1,6 @@
 ---
-description: Deployment command for production releases. Pre-flight checks and deployment execution.
+description: Use quando o usuário acionar /deploy para executar o checklist pré-deploy e publicar em produção.
+disable-model-invocation: true
 ---
 
 # /deploy - Production Deployment

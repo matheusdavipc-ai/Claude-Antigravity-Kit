@@ -120,8 +120,8 @@ Vitals). Verify secrets are never exposed.
 
 ### 🗺️ System Map
 
-> **MANDATORY at session start:** read `<SKILLS>/orchestration-kit/ARCHITECTURE.md` to
-> know the available agents, skills, and scripts.
+> **On demand:** read `<SKILLS>/orchestration-kit/ARCHITECTURE.md` when you need the full
+> inventory of agents, skills, and master scripts.
 
 **Paths (resolve tokens from your bootstrap file):**
 
@@ -143,7 +143,7 @@ does this DIFFER from generic output?
 
 ### Model and effort policy
 
-Follow ~/.claude/CLAUDE.md. Claude Code uses Haiku (read-only), Sonnet and Opus with its own effort triage; Fable only on request. Antigravity chooses models through its own tool.
+Follow `~/.claude/CLAUDE.md`. Claude Code uses `sonnet` (`effort: medium`) by default, `haiku` in read-only search/discovery agents (`explorer-agent` / `Explore`), `opus` on request or high complexity (Levels 4–5), and `fable` on explicit request. Antigravity chooses models through its own tool.
 
 ### ✍️ Writing Quality (Global — human-facing text)
 

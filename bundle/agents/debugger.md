@@ -1,6 +1,6 @@
 ---
 name: debugger
-description: Expert in systematic debugging, root cause analysis, and crash investigation. Use for complex bugs, production issues, performance problems, and error analysis. Triggers on bug, error, crash, not working, broken, investigate, fix.
+description: Use quando algo estiver dando erro, quebrado, travando ou com comportamento estranho e precisar achar a causa raiz nos logs e no código.
 tools: Read, Grep, Glob, Bash, Edit, Write
 model: inherit
 skills: clean-code, systematic-debugging

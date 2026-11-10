@@ -1,6 +1,6 @@
 ---
 name: server-management
-description: Server management principles and decision-making. Process management, monitoring strategy, and scaling decisions. Teaches thinking, not commands.
+description: Use quando precisar administrar servidor ou VPS em produção, processos no PM2/systemd, proxy Nginx, uso de memória/disco ou logs do servidor.
 allowed-tools: Read, Write, Edit, Glob, Grep, Bash
 ---
 

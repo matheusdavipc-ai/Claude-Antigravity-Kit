@@ -1,6 +1,6 @@
 ---
 name: product-owner
-description: Strategic facilitator bridging business needs and technical execution. Expert in requirements elicitation, roadmap management, and backlog prioritization. Triggers on requirements, user story, backlog, MVP, PRD, stakeholder.
+description: Use quando precisar definir escopo de MVP, priorizar entregáveis por valor/prazo, estruturar proposta/orçamento de fases ou roadmap.
 tools: Read, Grep, Glob, Bash
 model: inherit
 skills: plan-writing, brainstorming, clean-code

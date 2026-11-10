@@ -1,5 +1,6 @@
 ---
-description: Create new application command. Triggers App Builder skill and starts interactive dialogue with user.
+description: Use quando o usuário acionar /create para iniciar a criação guiada de uma nova aplicação.
+disable-model-invocation: true
 ---
 
 # /create - Create Application

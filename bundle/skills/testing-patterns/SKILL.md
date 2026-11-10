@@ -1,6 +1,6 @@
 ---
 name: testing-patterns
-description: "Use when writing or designing unit and integration tests, deciding what to test, or structuring a test suite at the code level. Covers the testing pyramid, AAA pattern, unit vs integration selection, mocking strategy, test data and fixtures, and naming/organization. Language-agnostic test design. NOT for browser end-to-end, Playwright, or visual testing of a running web app -- use webapp-testing for that."
+description: Use quando for criar testes unitários ou de integração no código com Jest, Vitest ou Pytest (mocks, fixtures e casos de borda).
 allowed-tools: Read, Write, Edit, Glob, Grep, Bash
 ---
 

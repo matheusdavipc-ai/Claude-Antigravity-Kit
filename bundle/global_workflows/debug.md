@@ -1,5 +1,6 @@
 ---
-description: Debugging command. Activates DEBUG mode for systematic problem investigation.
+description: Use quando o usuário acionar /debug para investigar e isolar a causa raiz de um bug.
+disable-model-invocation: true
 ---
 
 # /debug - Systematic Problem Investigation

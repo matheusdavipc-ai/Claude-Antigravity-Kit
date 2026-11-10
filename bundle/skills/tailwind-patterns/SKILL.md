@@ -1,6 +1,6 @@
 ---
 name: tailwind-patterns
-description: Tailwind CSS v4 principles. CSS-first configuration, container queries, modern patterns, design token architecture.
+description: Use quando for estilizar com Tailwind CSS (especialmente v4, @theme, variáveis de cor/tipografia, container queries e responsividade).
 allowed-tools: Read, Write, Edit, Glob, Grep
 ---
 

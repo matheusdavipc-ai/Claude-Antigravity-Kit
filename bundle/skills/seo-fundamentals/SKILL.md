@@ -1,6 +1,6 @@
 ---
 name: seo-fundamentals
-description: "Use when optimizing a page or site for search ranking and visibility. Covers E-E-A-T, Core Web Vitals, technical SEO (site structure, crawlability), on-page elements (titles, meta descriptions, headings), schema/structured-data markup, AI-content guidelines, and prioritized ranking factors. Trigger on: SEO, ranking, search visibility, meta tags, structured data, sitemap, keywords, Google indexing."
+description: Use quando for otimizar um site ou página para aparecer no Google e em IAs (SEO local/técnico, title, meta description, JSON-LD, sitemap e E-E-A-T).
 allowed-tools: Read, Glob, Grep
 ---
 

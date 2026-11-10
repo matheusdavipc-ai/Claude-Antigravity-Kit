@@ -1,6 +1,6 @@
 ---
 name: workflow-status
-description: Run the status development workflow when requested.
+description: Use quando o usuário acionar /status para exibir o progresso atual do projeto e das tarefas.
 disable-model-invocation: true
 ---
 

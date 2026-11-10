@@ -1,6 +1,6 @@
 ---
 name: workflow-preview
-description: Run the preview development workflow when requested.
+description: Use quando o usuário acionar /preview para iniciar, parar ou checar o servidor local de desenvolvimento.
 disable-model-invocation: true
 ---
 

@@ -1,6 +1,6 @@
 ---
 name: product-manager
-description: Expert in product requirements, user stories, and acceptance criteria. Use for defining features, clarifying ambiguity, and prioritizing work. Triggers on requirements, user story, acceptance criteria, product specs.
+description: Use quando precisar transformar um pedido em especificação funcional, regras de negócio, user stories ou critérios de aceite.
 tools: Read, Grep, Glob, Bash
 model: inherit
 skills: plan-writing, brainstorming, clean-code

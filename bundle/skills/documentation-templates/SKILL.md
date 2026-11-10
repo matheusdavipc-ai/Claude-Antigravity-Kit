@@ -1,6 +1,6 @@
 ---
 name: documentation-templates
-description: "Use when writing project documentation on explicit request. Ready-to-use structures for README (priority-ordered sections), per-endpoint API docs, JSDoc/TSDoc code comments, and Keep-a-Changelog changelogs. Trigger on: write a README, document this API, add docstrings, create a changelog, write documentation. Explicit-request only -- do not auto-generate docs unless the user asks."
+description: Use somente quando o usuário pedir explicitamente para escrever README, documentação de API, comentários JSDoc/TSDoc ou CHANGELOG.
 allowed-tools: Read, Glob, Grep
 ---
 

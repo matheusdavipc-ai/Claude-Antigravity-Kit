@@ -1,6 +1,6 @@
 ---
 name: nodejs-best-practices
-description: Node.js development principles and decision-making. Framework selection, async patterns, security, and architecture. Teaches thinking, not copying.
+description: Use quando for programar backend em Node.js ou TypeScript (arquitetura de módulos, async/await, filas, streams e tratamento de erros).
 allowed-tools: Read, Write, Edit, Glob, Grep
 ---
 

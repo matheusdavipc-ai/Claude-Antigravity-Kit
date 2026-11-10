@@ -1,6 +1,6 @@
 ---
 name: workflow-debug
-description: Run the debug development workflow when requested.
+description: Use quando o usuário acionar /debug para investigar um problema passo a passo.
 disable-model-invocation: true
 ---
 

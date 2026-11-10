@@ -1,6 +1,6 @@
 ---
 name: workflow-plan
-description: Run the plan development workflow when requested.
+description: Use quando o usuário acionar /plan para gerar um plano de projeto sem escrever código.
 disable-model-invocation: true
 ---
 

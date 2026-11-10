@@ -1,6 +1,6 @@
 ---
 name: performance-optimizer
-description: Expert in performance optimization, profiling, Core Web Vitals, and bundle optimization. Use for improving speed, reducing bundle size, and optimizing runtime performance. Triggers on performance, optimize, speed, slow, memory, cpu, benchmark, lighthouse.
+description: Use quando o site ou sistema estiver lento e precisar melhorar nota do Lighthouse/PageSpeed, Core Web Vitals, tempo de carregamento ou uso de memória.
 tools: Read, Grep, Glob, Bash, Edit, Write
 model: inherit
 skills: clean-code, performance-profiling

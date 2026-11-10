@@ -1,6 +1,6 @@
 ---
 name: code-review-checklist
-description: "Use when reviewing code or preparing a change for review. A checklist covering correctness and edge cases, security (injection, XSS/CSRF, hardcoded secrets, prompt injection), performance (N+1 queries, caching, bundle impact), code quality (naming, DRY, SOLID, abstraction), and test coverage. Trigger on: code review, review this PR, review my code, pre-merge check, is this code correct/safe."
+description: Use quando o usuário pedir code review, revisão de PR ou checagem antes de dar merge (lógica, casos de borda, segurança e testes).
 allowed-tools: Read, Glob, Grep
 ---
 

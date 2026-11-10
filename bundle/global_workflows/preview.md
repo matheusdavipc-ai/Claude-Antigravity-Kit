@@ -1,5 +1,6 @@
 ---
-description: Preview server start, stop, and status check. Local development server management.
+description: Use quando o usuário acionar /preview para iniciar, parar ou verificar o servidor local.
+disable-model-invocation: true
 ---
 
 # /preview - Preview Management

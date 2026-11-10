@@ -66,10 +66,25 @@ class InstallTests(unittest.TestCase):
             self.assertIn('claude-sonnet-5', installed['availableModels'])
             self.assertNotIn('nvidia/nemotron-3.5-lightning:free', installed['availableModels'])
             self.assertEqual(installed['model'], 'fable')
+            self.assertEqual(installed['effortLevel'], 'medium')
+            self.assertNotIn('CLAUDE_CODE_SUBAGENT_MODEL', installed['env'])
             self.assertNotIn('ANTHROPIC_BASE_URL', installed['env'])
             self.assertNotIn('hooks', installed)
-            self.assertNotIn('statusLine', installed)
+            self.assertIn('statusLine', installed)
+            self.assertIn('statusline.py', installed['statusLine']['command'])
+            self.assertTrue((home / '.claude/statusline.py').is_file())
             self.assertEqual(installed['permissions']['additionalDirectories'], ['example-directory'])
+            self.assertEqual(
+                installed['permissions']['deny'],
+                [
+                    'Read(**/node_modules/**)',
+                    'Read(**/.next/**)',
+                    'Read(**/dist/**)',
+                    'Read(**/build/**)',
+                    'Read(**/*.map)',
+                    'Read(**/*.min.js)',
+                ],
+            )
             self.assertEqual(unrelated.read_text(), 'unrelated custom skill')
             self.assertIn('Existing user instructions.', instructions.read_text())
             # Nothing for the removed router profile or its launcher.
@@ -136,17 +151,50 @@ class InstallTests(unittest.TestCase):
             original = home / '.claude/settings.json'
             original.parent.mkdir()
             native = fixture_native(home)
-            # Absent model -> Opus; a non-Anthropic ID is reset; a user's own Haiku pin is kept.
-            for before, expected in ((None, 'opus'), ('nvidia/nemotron-3.5-lightning:free', 'opus'), ('claude-opus-5-5[1m]', 'claude-opus-5-5[1m]'), ('sonnet', 'sonnet')):
+            # Absent model or legacy (opus + xhigh) -> Sonnet; explicit user model is kept.
+            for before, effort_in, expected in (
+                (None, None, 'sonnet'),
+                ('nvidia/nemotron-3.5-lightning:free', None, 'sonnet'),
+                ('opus', 'xhigh', 'sonnet'),
+                ('opus', 'medium', 'opus'),
+                ('claude-opus-5-5[1m]', None, 'claude-opus-5-5[1m]'),
+                ('sonnet', None, 'sonnet'),
+            ):
                 data = {'env': {'ANTHROPIC_DEFAULT_HAIKU_MODEL': 'claude-haiku-5-5'}}
                 if before:
                     data['model'] = before
+                if effort_in:
+                    data['effortLevel'] = effort_in
                 original.write_text(json.dumps(data))
                 install.Installer(home).install(native, update_path=False)
                 installed = install.load(original)
                 self.assertEqual(installed['model'], expected)
+                self.assertIn(installed['effortLevel'], ('low', 'medium'))
                 self.assertEqual(installed['env']['ANTHROPIC_DEFAULT_HAIKU_MODEL'], 'claude-haiku-5-5')
                 self.assertEqual(installed['availableModels'][:8], install.ORIGINAL_MODELS)
+
+    def test_statusline_and_claude_md_dedup(self):
+        import statusline
+        rendered = statusline.build_statusline({
+            'model': {'display_name': 'Sonnet 5.5'},
+            'context_window': {'used_percentage': 12.4, 'context_window_size': 250000, 'total_input_tokens': 31000},
+            'cost': {'total_cost_usd': 0.042},
+            'rate_limits': {'five_hour': {'used_percentage': 18.0}, 'seven_day': {'used_percentage': 41.2}},
+        })
+        self.assertIn('Sonnet 5.5', rendered)
+        self.assertIn('ctx 12% (31k/250k)', rendered)
+        self.assertIn('$0.04', rendered)
+        self.assertIn('5h 18%', rendered)
+        self.assertIn('7d 41%', rendered)
+        duplicated = (
+            '# Regras Globais\n- Regra do usuario.\n\n'
+            '# CLAUDE.md — Claude Code Bootstrap (Global)\nTexto antigo duplicado.\n\n'
+            '<!-- claude-openrouter-kit:start -->\nAntigo\n<!-- claude-openrouter-kit:end -->\n'
+        )
+        cleaned = install.managed_block(duplicated, 'Novo bloco')
+        self.assertIn('# Regras Globais', cleaned)
+        self.assertNotIn('Texto antigo duplicado.', cleaned)
+        self.assertEqual(cleaned.count('<!-- claude-openrouter-kit:start -->'), 1)
 
     def test_external_link_refused(self):
         with tempfile.TemporaryDirectory() as temp, tempfile.TemporaryDirectory() as external:

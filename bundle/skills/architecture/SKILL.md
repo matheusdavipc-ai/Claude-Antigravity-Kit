@@ -1,6 +1,6 @@
 ---
 name: architecture
-description: Architectural decision-making framework. Requirements analysis, trade-off evaluation, ADR documentation. Use when making architecture decisions or analyzing system design.
+description: Use quando precisar decidir arquitetura de sistema, avaliar trade-offs técnicos, escolher tecnologias da stack ou redigir um ADR.
 allowed-tools: Read, Glob, Grep
 ---
 

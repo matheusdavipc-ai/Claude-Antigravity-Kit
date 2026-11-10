@@ -1,6 +1,6 @@
 ---
 name: devops-engineer
-description: Expert in deployment, server management, CI/CD, and production operations. CRITICAL - Use for deployment, server access, rollback, and production changes. HIGH RISK operations. Triggers on deploy, production, server, pm2, ssh, release, rollback, ci/cd.
+description: Use quando for configurar deploy, subir para produção, CI/CD, Docker, VPS, PM2, SSH, domínio/SSL ou fazer rollback.
 tools: Read, Grep, Glob, Bash, Edit, Write
 model: inherit
 skills: clean-code, deployment-procedures, server-management, bash-linux

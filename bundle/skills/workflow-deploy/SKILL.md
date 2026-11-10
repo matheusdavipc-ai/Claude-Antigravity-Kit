@@ -1,6 +1,6 @@
 ---
 name: workflow-deploy
-description: Run the deploy development workflow when requested.
+description: Use quando o usuário acionar /deploy para executar verificações pré-vôo e publicação em produção.
 disable-model-invocation: true
 ---
 
